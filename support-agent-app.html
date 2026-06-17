@@ -1419,6 +1419,9 @@
 
       function buildQaPayload(product, question, focusedItem = null) {
         const activeItem = focusedItem || getFocusedQaItem(product, question);
+        const relatedItems = getProductItems(product);
+        const changedItems = relatedItems.filter(hasLimitChange);
+        const listMode = questionWantsList(question);
         const generalAsIs = norm(activeItem?.limits?.generalAsIs);
         const generalToBe = norm(activeItem?.limits?.generalToBe);
         const simpleAsIs = norm(activeItem?.limits?.simpleAsIs);
@@ -1437,8 +1440,17 @@
         ].join("\n");
         return {
           question,
+          questionMode: listMode ? "listChangedRiders" : "singleRider",
           answerFocus: "generalAndSimpleLimitOnly",
           ignoreFields: ["individualSum"],
+          selectedProduct: {
+            id: product?.id || activeItem?.id || "",
+            productName: productDisplayName(product || activeItem),
+            productCode: norm(product?.productCode) || norm(activeItem?.productCode) || "",
+            sourceFileName: norm(product?.sourceFileName) || norm(activeItem?.sourceFileName) || "",
+            createdAt: norm(product?.createdAt) || norm(activeItem?.createdAt) || "",
+            status: getProductOverallStatus(product || activeItem),
+          },
           product: {
             id: activeItem?.id || product.id,
             productName: productDisplayName(activeItem),
@@ -1468,6 +1480,34 @@
             },
             history: (activeItem?.history || []).slice(0, 5),
           },
+          relatedItems: relatedItems.map((item) => ({
+            id: item?.id || "",
+            productName: productDisplayName(item),
+            riderLabel: productRiderLabel(item),
+            riderName: labelName(item),
+            productCode: item?.productCode || "",
+            insuranceCodes: (item?.insuranceCodes || [item?.insuranceCode]).filter(Boolean),
+            hasLimitChange: hasLimitChange(item),
+            comparisonSummary: [
+              `특약: ${productRiderLabel(item)}`,
+              `일반/건강 단일건: ${norm(item?.limits?.generalAsIs) || "-"} -> ${norm(item?.limits?.generalToBe) || "-"}`,
+              `간편 단일건: ${norm(item?.limits?.simpleAsIs) || "-"} -> ${norm(item?.limits?.simpleToBe) || "-"}`,
+              `인별합산: ${norm(item?.limits?.individualSum) || "-"}`,
+            ].join("\n"),
+          })),
+          changedItems: changedItems.map((item) => ({
+            id: item?.id || "",
+            productName: productDisplayName(item),
+            riderLabel: productRiderLabel(item),
+            riderName: labelName(item),
+            productCode: item?.productCode || "",
+            insuranceCodes: (item?.insuranceCodes || [item?.insuranceCode]).filter(Boolean),
+            comparisonSummary: [
+              `특약: ${productRiderLabel(item)}`,
+              `일반/건강 단일건: ${norm(item?.limits?.generalAsIs) || "-"} -> ${norm(item?.limits?.generalToBe) || "-"}`,
+              `간편 단일건: ${norm(item?.limits?.simpleAsIs) || "-"} -> ${norm(item?.limits?.simpleToBe) || "-"}`,
+            ].join("\n"),
+          })),
           products: state.products.slice(0, 20).map((item) => ({
             productName: productDisplayName(item),
             riderLabel: productRiderLabel(item),
@@ -1682,6 +1722,25 @@
       function productRiderLabel(product) {
         const code = norm(product?.insuranceCode) || norm(product?.insuranceCodes?.[0]) || "-";
         return `${code} ${labelName(product)}`.trim();
+      }
+
+      function getProductItems(product) {
+        if (!product) return [];
+        if (Array.isArray(product.items) && product.items.length) return product.items.filter(Boolean);
+        return [product].filter(Boolean);
+      }
+
+      function hasLimitChange(product) {
+        const generalAsIs = norm(product?.limits?.generalAsIs);
+        const generalToBe = norm(product?.limits?.generalToBe);
+        const simpleAsIs = norm(product?.limits?.simpleAsIs);
+        const simpleToBe = norm(product?.limits?.simpleToBe);
+        return generalAsIs !== generalToBe || simpleAsIs !== simpleToBe;
+      }
+
+      function questionWantsList(question) {
+        const q = norm(question).toLowerCase();
+        return /정리해줘|정리해|목록|전체|변경.*특약|특약.*변경|한도.*변경|변경.*한도/.test(q);
       }
 
       function productDisplayName(product) {
