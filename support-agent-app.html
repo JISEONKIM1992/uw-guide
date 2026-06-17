@@ -1418,10 +1418,10 @@
       }
 
       function buildQaPayload(product, question, focusedItem = null) {
-        const activeItem = focusedItem || getFocusedQaItem(product, question);
-        const relatedItems = getProductItems(product);
-        const changedItems = relatedItems.filter(hasLimitChange);
         const listMode = questionWantsList(question);
+        const activeItem = listMode ? product : (focusedItem || getFocusedQaItem(product, question));
+        const relatedItems = listMode ? getRelatedQaItemsForProduct(product) : getProductItems(activeItem);
+        const changedItems = relatedItems.filter(hasLimitChange);
         const generalAsIs = norm(activeItem?.limits?.generalAsIs);
         const generalToBe = norm(activeItem?.limits?.generalToBe);
         const simpleAsIs = norm(activeItem?.limits?.simpleAsIs);
@@ -1479,6 +1479,7 @@
               exam: activeItem?.steps?.exam || {},
             },
             history: (activeItem?.history || []).slice(0, 5),
+            productLimitChangeCount: changedItems.length,
           },
           relatedItems: relatedItems.map((item) => ({
             id: item?.id || "",
@@ -1741,6 +1742,19 @@
       function questionWantsList(question) {
         const q = norm(question).toLowerCase();
         return /정리해줘|정리해|목록|전체|변경.*특약|특약.*변경|한도.*변경|변경.*한도/.test(q);
+      }
+
+      function getRelatedQaItemsForProduct(product) {
+        const allItems = getAllQaItems();
+        const targetCode = norm(product?.productCode);
+        const targetName = norm(product?.productName);
+        if (!allItems.length) return [];
+        const matched = allItems.filter((item) => {
+          const code = norm(item?.productCode);
+          const name = norm(item?.productName);
+          return (targetCode && code === targetCode) || (targetName && name === targetName);
+        });
+        return matched.length ? matched : allItems;
       }
 
       function productDisplayName(product) {
