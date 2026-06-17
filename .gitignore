@@ -1,0 +1,14 @@
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.tmp
+_tmp_*.xlsx
+~$*
+render-check/
+render-check-restyle/
+*.zip
+docs/screen_spec_preview.html
+support-agent-design-preview.html
+support-agent-bizrouter-preview.html

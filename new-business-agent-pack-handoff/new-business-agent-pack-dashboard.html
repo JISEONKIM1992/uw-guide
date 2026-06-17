@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>신계약 기준 반영 협업 Agent Pack 대시보드</title>
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
+        --surface-3: #eef3f8;
+        --ink: #17202e;
+        --muted: #667085;
+        --line: #dce3ec;
+        --blue: #2456d6;
+        --blue-soft: #e8efff;
+        --green: #087a61;
+        --green-soft: #e6f6f0;
+        --amber: #a15c00;
+        --amber-soft: #fff3dc;
+        --red: #b42318;
+        --red-soft: #ffe9e7;
+        --violet: #6941c6;
+        --violet-soft: #f0eaff;
+        --shadow: 0 18px 45px rgba(16, 24, 40, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      .page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 4vw, 58px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .top-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .action {
+        min-height: 40px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 9px 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .action:hover {
+        border-color: #b8c4d4;
+        background: var(--surface-2);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-message {
+        padding: 26px;
+      }
+
+      .hero-message p {
+        margin: 0;
+        max-width: 820px;
+        color: #344054;
+        font-size: clamp(18px, 2vw, 25px);
+        line-height: 1.55;
+        font-weight: 700;
+      }
+
+      .hero-message mark {
+        padding: 0 4px;
+        background: var(--amber-soft);
+        color: #6b3a00;
+        border-radius: 4px;
+      }
+
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .metric {
+        min-height: 104px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+      }
+
+      .metric b {
+        display: block;
+        font-size: 28px;
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .scope-panel {
+        padding: 22px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .scope-panel h2,
+      .section h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 0;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 31px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        border: 1px solid transparent;
+      }
+
+      .tag.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+        border-color: #c7d7ff;
+      }
+
+      .tag.green {
+        background: var(--green-soft);
+        color: var(--green);
+        border-color: #bce6d8;
+      }
+
+      .tag.amber {
+        background: var(--amber-soft);
+        color: var(--amber);
+        border-color: #ffd99a;
+      }
+
+      .tag.red {
+        background: var(--red-soft);
+        color: var(--red);
+        border-color: #ffc5bf;
+      }
+
+      .line-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .line-list li {
+        display: grid;
+        grid-template-columns: 7px 1fr;
+        gap: 10px;
+        align-items: start;
+        color: #344054;
+        line-height: 1.45;
+        font-size: 14px;
+      }
+
+      .line-list li::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        margin-top: 7px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      .section {
+        margin-top: 18px;
+        padding: 24px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .section-head p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .agent-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .agent-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+
+      .agent-card header {
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+      }
+
+      .agent-card h3 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+
+      .agent-card .owner {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .agent-card .body {
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .keyword-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .mini-label {
+        margin: 0 0 7px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+      }
+
+      .process {
+        display: grid;
+        gap: 14px;
+      }
+
+      .process-band {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+
+      .process-band header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+      }
+
+      .process-band h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .process-flow {
+        padding: 16px;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(150px, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .step {
+        position: relative;
+        min-height: 112px;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        display: grid;
+        align-content: start;
+        gap: 7px;
+      }
+
+      .step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: -9px;
+        top: 50%;
+        width: 8px;
+        height: 2px;
+        background: #aab6c6;
+      }
+
+      .step small {
+        color: var(--muted);
+        font-weight: 900;
+      }
+
+      .step strong {
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .step span {
+        color: #475467;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .step.pain {
+        background: var(--red-soft);
+        border-color: #ffbbb4;
+      }
+
+      .step.agent {
+        background: var(--blue-soft);
+        border-color: #c7d7ff;
+      }
+
+      .step.human {
+        background: var(--amber-soft);
+        border-color: #ffd99a;
+      }
+
+      .step.output {
+        background: var(--green-soft);
+        border-color: #bce6d8;
+      }
+
+      .asis-lanes {
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .lane-row {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .lane-label {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+        padding: 13px;
+        display: grid;
+        align-content: center;
+        gap: 6px;
+      }
+
+      .lane-label strong {
+        font-size: 15px;
+      }
+
+      .lane-label span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .lane-steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(135px, 1fr));
+        gap: 10px;
+      }
+
+      .lane-steps.three {
+        grid-template-columns: repeat(3, minmax(135px, 1fr));
+      }
+
+      .lane-steps .step {
+        min-height: 94px;
+      }
+
+      .lane-steps .step:not(:last-child)::after {
+        display: none;
+      }
+
+      .transition {
+        padding: 18px 20px;
+        border: 1px solid #b8c4d4;
+        border-radius: 8px;
+        background: #1f2937;
+        color: #ffffff;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .transition b {
+        font-size: 15px;
+      }
+
+      .transition span {
+        color: #d0d5dd;
+        line-height: 1.45;
+      }
+
+      .transition .pill {
+        white-space: nowrap;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .qa-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .qa-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+
+      .qa-card header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+      }
+
+      .qa-card h3 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .qa-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .qa-table th,
+      .qa-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.5;
+      }
+
+      .qa-table th {
+        width: 38%;
+        background: var(--surface-2);
+        color: #344054;
+        font-size: 13px;
+      }
+
+      .qa-table tr:last-child th,
+      .qa-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .closing {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .statement {
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--surface-2);
+      }
+
+      .statement h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .statement p {
+        margin: 0;
+        color: #344054;
+        line-height: 1.55;
+        font-weight: 700;
+      }
+
+      .print-note {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 1100px) {
+        .hero,
+        .closing,
+        .qa-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .process-flow {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .lane-row {
+          grid-template-columns: 1fr;
+        }
+
+        .lane-steps,
+        .lane-steps.three {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .step:not(:last-child)::after {
+          display: none;
+        }
+
+        .agent-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          padding: 14px;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .top-actions {
+          justify-content: flex-start;
+        }
+
+        .hero-message,
+        .section {
+          padding: 18px;
+        }
+
+        .hero-metrics,
+        .process-flow,
+        .lane-steps,
+        .lane-steps.three {
+          grid-template-columns: 1fr;
+        }
+
+        .transition {
+          grid-template-columns: 1fr;
+        }
+
+        .qa-table th,
+        .qa-table td {
+          display: block;
+          width: 100%;
+        }
+
+        .qa-table th {
+          border-bottom: 0;
+          padding-bottom: 4px;
+        }
+
+        .qa-table td {
+          padding-top: 4px;
+        }
+      }
+
+      @media print {
+        body {
+          background: #ffffff;
+        }
+
+        .page {
+          max-width: none;
+          padding: 0;
+        }
+
+        .top-actions,
+        .print-note {
+          display: none;
+        }
+
+        .panel,
+        .agent-card,
+        .process-band,
+        .qa-card,
+        .statement {
+          box-shadow: none;
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">AI 개발 기획 대시보드</p>
+          <h1>신계약 기준 반영 협업 Agent Pack</h1>
+        </div>
+        <div class="top-actions" aria-label="대시보드 동작">
+          <button class="action" type="button" data-jump="#process">프로세스</button>
+          <button class="action" type="button" data-jump="#qa">예상 질문</button>
+          <button class="action" type="button" onclick="window.print()">발표자료 저장</button>
+        </div>
+      </div>
+
+      <section class="hero" aria-label="핵심 메시지">
+        <div class="panel hero-message">
+          <p>
+            한 가지 기준 변경을 3개 부서가
+            <mark>해석 오류 없이</mark>
+            일관되게 반영하도록, 에이전트가 초안과 체크리스트를 만들고
+            사람은 검토, 수정, 최종 반영을 수행한다.
+          </p>
+          <div class="hero-metrics" aria-label="핵심 수치">
+            <div class="metric">
+              <b>3</b>
+              <span>단기 적용 Agent<br />기획 · 지원 · 심사</span>
+            </div>
+            <div class="metric">
+              <b>5</b>
+              <span>완료 산출물<br />기준표 · 비교표 · 영향도 · 체크리스트 · FAQ</span>
+            </div>
+            <div class="metric">
+              <b>$5↓</b>
+              <span>초기 파일럿 월 API 비용 추정<br />월 10회 사용 기준</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel scope-panel" aria-label="적용 범위">
+          <h2>단기 적용 범위</h2>
+          <div class="tag-list">
+            <span class="tag blue">초안 작성</span>
+            <span class="tag green">영향도 분석</span>
+            <span class="tag amber">사람 승인</span>
+            <span class="tag red">자동 판단 제외</span>
+          </div>
+          <ul class="line-list">
+            <li>최종 인수기준 결정은 사람이 수행</li>
+            <li>RD 직접 입력과 시스템 자동 승인은 제외</li>
+            <li>현장 공지 발송 전 심사 담당자 승인 필수</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="panel section" aria-labelledby="agents-title">
+        <div class="section-head">
+          <div>
+            <h2 id="agents-title">3개 부서 Agent 구성</h2>
+            <p>부서별 반복 작업을 줄이되, 판단과 반영 책임은 담당자에게 남긴다.</p>
+          </div>
+          <span class="tag blue">Agent Pack</span>
+        </div>
+
+        <div class="agent-grid">
+          <article class="agent-card">
+            <header>
+              <h3>기획 Agent</h3>
+              <div class="owner">신계약 기획</div>
+            </header>
+            <div class="body">
+              <div>
+                <p class="mini-label">핵심 기능</p>
+                <div class="keyword-row">
+                  <span class="tag blue">기준 변경 구조화</span>
+                  <span class="tag blue">유사 특약 비교</span>
+                </div>
+              </div>
+              <div>
+                <p class="mini-label">산출물</p>
+                <ul class="line-list">
+                  <li>공통 기준 변경표</li>
+                  <li>복사 가능 항목과 검토 필요 항목</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="agent-card">
+            <header>
+              <h3>지원 Agent</h3>
+              <div class="owner">신계약지원</div>
+            </header>
+            <div class="body">
+              <div>
+                <p class="mini-label">핵심 기능</p>
+                <div class="keyword-row">
+                  <span class="tag green">시스템 영향도</span>
+                  <span class="tag green">RD 체크리스트</span>
+                </div>
+              </div>
+              <div>
+                <p class="mini-label">산출물</p>
+                <ul class="line-list">
+                  <li>시스템 변경 필요 항목</li>
+                  <li>기계약합산코드 확인 항목</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="agent-card">
+            <header>
+              <h3>심사 Agent</h3>
+              <div class="owner">신계약심사</div>
+            </header>
+            <div class="body">
+              <div>
+                <p class="mini-label">핵심 기능</p>
+                <div class="keyword-row">
+                  <span class="tag amber">현장 공지</span>
+                  <span class="tag amber">FAQ 초안</span>
+                </div>
+              </div>
+              <div>
+                <p class="mini-label">산출물</p>
+                <ul class="line-list">
+                  <li>현장 공지 초안</li>
+                  <li>심사자 안내문과 예상 질의응답</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel section" id="process" aria-labelledby="process-title">
+        <div class="section-head">
+          <div>
+            <h2 id="process-title">AS-IS / TO-BE 프로세스</h2>
+            <p>AS-IS를 위에, TO-BE를 아래에 배치해 전환 방향을 발표 흐름대로 보여준다.</p>
+          </div>
+          <span class="tag red">Pain to Agent</span>
+        </div>
+
+        <div class="process">
+          <div class="process-band" aria-label="AS-IS 현재 프로세스">
+            <header>
+              <h3>AS-IS 현재 프로세스</h3>
+              <span class="tag red">기준 공유 후 병렬 진행</span>
+            </header>
+            <div class="asis-lanes">
+              <div class="lane-row">
+                <div class="lane-label">
+                  <strong>신계약 기획</strong>
+                  <span>기준 수립과 가이드라인 반영</span>
+                </div>
+                <div class="lane-steps">
+                  <div class="step">
+                    <small>1</small>
+                    <strong>인수기준 수립</strong>
+                    <span>상품출시 기준 · 전략 인수기준</span>
+                  </div>
+                  <div class="step">
+                    <small>2</small>
+                    <strong>가이드라인 반영</strong>
+                    <span>보종코드 · 특약 · 한도 · 주석</span>
+                  </div>
+                  <div class="step pain">
+                    <small>Pain</small>
+                    <strong>구조화 약함</strong>
+                    <span>변경 내용과 유사 특약 비교가 경험 의존</span>
+                  </div>
+                  <div class="step output">
+                    <small>공유</small>
+                    <strong>기준 확정 후 공유</strong>
+                    <span>지원/심사 부서 병렬 진행 시작</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lane-row">
+                <div class="lane-label">
+                  <strong>신계약지원</strong>
+                  <span>시스템/RD 반영 준비</span>
+                </div>
+                <div class="lane-steps">
+                  <div class="step">
+                    <small>병렬</small>
+                    <strong>시스템 변경 항목 도출</strong>
+                    <span>변경 기준을 시스템 반영 항목으로 해석</span>
+                  </div>
+                  <div class="step pain">
+                    <small>Pain</small>
+                    <strong>수작업 도출</strong>
+                    <span>영향도와 RD 반영 항목을 사람이 정리</span>
+                  </div>
+                  <div class="step">
+                    <small>반영</small>
+                    <strong>RD 정리/코드 입력</strong>
+                    <span>RD 변경 항목 · 기계약합산코드 확인</span>
+                  </div>
+                  <div class="step">
+                    <small>검증</small>
+                    <strong>전산심사 수정/테스트</strong>
+                    <span>메시지 반영과 시스템 테스트</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lane-row">
+                <div class="lane-label">
+                  <strong>신계약심사</strong>
+                  <span>운영 기준과 현장 안내 정리</span>
+                </div>
+                <div class="lane-steps">
+                  <div class="step">
+                    <small>병렬</small>
+                    <strong>기준 변경 내용 검토</strong>
+                    <span>심사 운영 관점의 변경 사항 확인</span>
+                  </div>
+                  <div class="step pain">
+                    <small>Pain</small>
+                    <strong>수기/구두 정리</strong>
+                    <span>기준안이 문서화되지 않거나 근거 추적이 약함</span>
+                  </div>
+                  <div class="step">
+                    <small>검토</small>
+                    <strong>전산 메시지 영향 검토</strong>
+                    <span>메시지 · 전결 · 업무단 영향 확인</span>
+                  </div>
+                  <div class="step pain">
+                    <small>Pain</small>
+                    <strong>현장 공지 표현 차이</strong>
+                    <span>공지 문구가 해석자에 따라 달라질 수 있음</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="transition">
+            <b>전환 방향</b>
+            <span>에이전트가 초안과 체크리스트를 만들고, 부서 담당자가 검토·수정·반영한다.</span>
+            <span class="pill">사람 승인 필수</span>
+          </div>
+
+          <div class="process-band" aria-label="TO-BE 단기 적용 프로세스">
+            <header>
+              <h3>TO-BE 단기 적용 프로세스</h3>
+              <span class="tag blue">Agent 보조</span>
+            </header>
+            <div class="process-flow">
+              <div class="step agent">
+                <small>기획 Agent</small>
+                <strong>기준 변경 구조화</strong>
+                <span>유사 특약 비교와 공통 기준 변경표 생성</span>
+              </div>
+              <div class="step human">
+                <small>기획 담당자</small>
+                <strong>검토/승인</strong>
+                <span>기준 변경표와 비교 결과 확정</span>
+              </div>
+              <div class="step agent">
+                <small>지원 Agent</small>
+                <strong>영향도 분석</strong>
+                <span>시스템 변경 항목과 RD 체크리스트 생성</span>
+              </div>
+              <div class="step agent">
+                <small>심사 Agent</small>
+                <strong>공지/FAQ 초안</strong>
+                <span>현장 공지와 예상 질의응답 생성</span>
+              </div>
+              <div class="step output">
+                <small>운영 반영</small>
+                <strong>병렬 수행</strong>
+                <span>지원: 시스템 반영/테스트 · 심사: 공지/운영 안내</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section" id="qa" aria-labelledby="qa-title">
+        <div class="section-head">
+          <div>
+            <h2 id="qa-title">예상 질문 및 답변 키워드</h2>
+            <p>이미지 제출 환경에서도 모든 답변이 보이도록 정적 카드로 펼쳐 구성했다.</p>
+          </div>
+          <span class="tag violet">Static Q&A</span>
+        </div>
+
+        <div class="qa-grid">
+            <article class="qa-card">
+              <header>
+                <h3>약한 가정</h3>
+                <span class="tag blue">초안 목적</span>
+              </header>
+              <table class="qa-table">
+                <tbody>
+                  <tr>
+                    <th>기준 변경 구조화가 정확한가?</th>
+                    <td>최종 판단이 아니라 초안 작성 목적. 사람의 수정과 최종 반영을 전제로 운영.</td>
+                  </tr>
+                  <tr>
+                    <th>유사 특약 비교를 그대로 믿어도 되는가?</th>
+                    <td>비교 결과는 참고 후보. 복사·반영 여부는 기획 담당자가 승인.</td>
+                  </tr>
+                  <tr>
+                    <th>자동화 범위가 넓어지는가?</th>
+                    <td>자동 판단, 직접 입력, 자동 승인 제외 범위를 명시.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <article class="qa-card">
+              <header>
+                <h3>테스트/데이터</h3>
+                <span class="tag green">샘플 검증</span>
+              </header>
+              <table class="qa-table">
+                <tbody>
+                  <tr>
+                    <th>테스트 데이터</th>
+                    <td>가이드라인 샘플, 보종코드, RD 양식, 기존 공지문 샘플 활용.</td>
+                  </tr>
+                  <tr>
+                    <th>측정 방식</th>
+                    <td>원천 데이터와 초안을 비교. 누락, 오분류, 수정 필요 문장 비율, 담당자 승인 가능 여부 확인.</td>
+                  </tr>
+                  <tr>
+                    <th>테스트 목표</th>
+                    <td>완벽한 자동 반영이 아니라, 사람이 검토 가능한 초안 품질 확보.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <article class="qa-card">
+              <header>
+                <h3>예상 비용</h3>
+                <span class="tag amber">월 $5 이하</span>
+              </header>
+              <table class="qa-table">
+                <tbody>
+                  <tr>
+                    <th>월 사용량</th>
+                    <td>상품 2개 출시 기준, Agent Pack 전체 월 10회 사용 가정.</td>
+                  </tr>
+                  <tr>
+                    <th>입력 크기</th>
+                    <td>가이드라인 1개 시트, 17열 x 600행 엑셀 기준.</td>
+                  </tr>
+                  <tr>
+                    <th>월 API 비용</th>
+                    <td>저추론 작업이라 고성능 모델 불필요. 저비용 모델 기준 월 $1~$3, 재실행·검증 포함 초기 파일럿 월 $5 이하 추정.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <article class="qa-card">
+              <header>
+                <h3>보안/보완</h3>
+                <span class="tag red">회사 보안 연계</span>
+              </header>
+              <table class="qa-table">
+                <tbody>
+                  <tr>
+                    <th>외부 모델/로그 위험</th>
+                    <td>내부망 사용 구조라면 일부 우려 완화. 회사 보안 방향성과 함께 별도 설계 필요.</td>
+                  </tr>
+                  <tr>
+                    <th>단기 통제</th>
+                    <td>민감정보 최소 입력, 문서 권한 관리, 원문 로그 저장 제한, 담당자 승인 게이트.</td>
+                  </tr>
+                  <tr>
+                    <th>향후 과제</th>
+                    <td>내부 문서, 심사 기준, 로그 보관 정책은 보안부서 기준과 연계.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <article class="qa-card">
+              <header>
+                <h3>사람 개입</h3>
+                <span class="tag amber">검토 필수</span>
+              </header>
+              <table class="qa-table">
+                <tbody>
+                  <tr>
+                    <th>개입 시점</th>
+                    <td>에이전트 초안 작성 후 사람이 반드시 검토, 수정, 반영.</td>
+                  </tr>
+                  <tr>
+                    <th>부서별 역할</th>
+                    <td>기획: 기준 변경표·유사 특약 비교 검토. 지원: 시스템 영향도·RD 체크리스트 검토. 심사: 공지·FAQ 초안 검토.</td>
+                  </tr>
+                  <tr>
+                    <th>에이전트 역할</th>
+                    <td>판단자가 아니라 초안 작성 보조자.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+        </div>
+      </section>
+
+      <section class="section closing" aria-label="발표 마무리">
+        <div class="statement">
+          <h3>완료 정의</h3>
+          <p>기준 변경표, 유사 특약 비교표, 시스템 영향도 목록, RD 반영 체크리스트, 현장 공지/FAQ 초안이 생성되고 담당자가 검토 가능한 상태.</p>
+        </div>
+        <div class="statement">
+          <h3>한 줄 결론</h3>
+          <p>이 Agent Pack은 심사나 기준 판단을 대체하지 않고, 병렬 협업의 해석 차이를 줄이는 초안 작성 체계다.</p>
+        </div>
+      </section>
+
+      <p class="print-note">발표 시 브라우저 확대율 90~100%를 권장합니다. 인쇄 또는 PDF 저장은 우측 상단의 "발표자료 저장" 버튼을 사용하세요.</p>
+    </main>
+
+    <script>
+      document.querySelectorAll("[data-jump]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = document.querySelector(button.getAttribute("data-jump"));
+          if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    </script>
+  </body>
+</html>

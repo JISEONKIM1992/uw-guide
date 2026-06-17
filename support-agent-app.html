@@ -1,0 +1,2241 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>지원 Agent</title>
+    <script src="./node_modules/xlsx-js-style/dist/xlsx.min.js"></script>
+    <style>
+      :root{
+        --bg:#dfeaff;
+        --surface:#ffffff;
+        --surface-2:#eef4ff;
+        --ink:#172033;
+        --muted:#4a5568;
+        --line:#a9c2ef;
+        --blue:#004dff;
+        --blue-deep:#0b1430;
+        --blue-soft:#cfe0ff;
+        --sheet-blue:#c7dcff;
+        --sheet-yellow:#fff200;
+        --sheet-green:#e2f0d9;
+        --green:#11805f;
+        --green-soft:#e8f6ef;
+        --amber:#b66b00;
+        --amber-soft:#fff4df;
+        --violet:#6a49cf;
+        --violet-soft:#f2ebff;
+        --red:#b42318;
+        --red-soft:#ffe9e7;
+        --shadow:0 20px 48px rgba(16,24,40,.12);
+      }
+      *{box-sizing:border-box}
+      body{
+        margin:0;
+        min-width:320px;
+        background:
+          radial-gradient(circle at 12% 8%, rgba(255,255,255,.95), transparent 24%),
+          linear-gradient(180deg, #e3ecff 0%, #d3e2ff 100%);
+        color:var(--ink);
+        font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      button,input,select,textarea{font:inherit}
+      html{scroll-behavior:smooth}
+
+      .page{max-width:1440px;margin:0 auto;padding:24px}
+      .hero{
+        position:relative;
+        background:
+          radial-gradient(circle at 18% 20%, rgba(255,255,255,.98), transparent 24%),
+          linear-gradient(180deg, #dce8ff 0%, #bfd3ff 100%);
+        color:#172033;
+        border-radius:26px;
+        padding:28px;
+        box-shadow:var(--shadow);
+      }
+      .hero-top{display:flex;gap:18px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+      .hero-side{display:grid;gap:12px;justify-items:end;min-width:min(720px,100%)}
+      .hero-actions{
+        position:absolute;
+        top:22px;
+        right:22px;
+        display:flex;
+        justify-content:flex-end;
+        z-index:2;
+      }
+      .eyebrow{
+        display:inline-flex;
+        align-items:center;
+        min-height:34px;
+        padding:0 14px;
+        border-radius:999px;
+        background:var(--blue);
+        font-weight:800;
+        font-size:13px;
+        color:#fff;
+      }
+      h1{margin:14px 0 16px;font-size:clamp(48px,5.6vw,82px);line-height:.95;letter-spacing:-.06em;max-width:540px}
+      .lead{margin:0;max-width:900px;color:#2f2f2f;font-size:15px;line-height:1.75}
+      .stats{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:10px;
+        min-width:min(720px,100%);
+      }
+      .stat{
+        background:rgba(255,255,255,.38);
+        border:1px solid rgba(0,77,255,.16);
+        border-radius:18px;
+        padding:16px;
+        min-height:122px;
+        backdrop-filter:blur(4px);
+      }
+      .stat small{display:block;color:#334155;font-weight:700}
+      .stat b{display:block;font-size:40px;line-height:1;margin:14px 0 8px;color:#0f172a}
+      .stat span{color:#475569;font-size:13px}
+
+      .section{
+        margin-top:18px;
+        background:var(--surface);
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:20px;
+        box-shadow:var(--shadow);
+        padding:20px;
+        overflow:hidden;
+      }
+      .section-head{
+        display:flex;
+        justify-content:space-between;
+        gap:16px;
+        align-items:flex-start;
+        flex-wrap:wrap;
+        padding-bottom:14px;
+        border-bottom:1px solid rgba(0,77,255,.12);
+      }
+      .section h2{margin:0;font-size:22px}
+      .section p{margin:8px 0 0;color:var(--muted);line-height:1.55}
+
+      .sheet-banner{
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-top:14px;
+        padding:14px 16px;
+        border-radius:16px;
+        border:1px solid rgba(0,77,255,.14);
+        background:linear-gradient(180deg,#dbe7ff 0%,#c7dcff 100%);
+      }
+      .sheet-banner .label{
+        min-width:112px;
+        padding:8px 12px;
+        border-radius:12px;
+        background:var(--blue);
+        color:#fff;
+        font-weight:900;
+        text-align:center;
+      }
+      .sheet-banner .text{
+        color:#273444;
+        font-weight:700;
+        line-height:1.5;
+      }
+
+      .chip-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+      .chip{
+        display:inline-flex;
+        align-items:center;
+        min-height:30px;
+        padding:0 12px;
+        border-radius:999px;
+        border:1px solid rgba(0,77,255,.14);
+        background:#eef5ff;
+        color:#273444;
+        font-size:13px;
+        font-weight:800;
+      }
+      .chip.green{background:#dffcf1;color:var(--green);border-color:#bfe4d6}
+      .chip.amber{background:#fff0c5;color:var(--amber);border-color:#ffd9a8}
+      .chip.violet{background:var(--violet-soft);color:var(--violet);border-color:#dfd3ff}
+      .chip.red{background:var(--red-soft);color:var(--red);border-color:#ffc7c0}
+
+      .upload-shell{
+        margin-top:16px;
+        border:1px solid rgba(0,77,255,.12);
+        background:#fff;
+        border-radius:18px;
+        padding:18px;
+      }
+      .upload-grid{
+        display:grid;
+        grid-template-columns:1.15fr .85fr;
+        gap:14px;
+      }
+      .drop-list{display:grid;gap:12px}
+      .drop-card{
+        display:block;
+        border-radius:18px;
+        border:1px solid rgba(0,77,255,.14);
+        background:#fff;
+        min-height:170px;
+        padding:18px;
+        cursor:pointer;
+        box-shadow:0 1px 0 rgba(16,24,40,.02);
+      }
+      .drop-card.dragover{outline:2px solid var(--blue);background:#edf4ff}
+      .drop-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+      .drop-top b{font-size:18px}
+      .mini-note{color:var(--muted);font-size:13px;line-height:1.5}
+      .file-stack{display:grid;gap:8px;margin-top:12px}
+      .file-line{
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        padding:10px 12px;
+        border:1px solid rgba(0,77,255,.10);
+        border-radius:12px;
+        background:#fff;
+        color:#344054;
+        font-size:13px;
+      }
+      .controls{display:grid;gap:10px;align-content:start}
+      .field{display:grid;gap:8px}
+      .field label{font-size:13px;font-weight:800;color:#344054}
+      .field input{
+        width:100%;
+        min-height:42px;
+        border:1px solid rgba(0,77,255,.14);
+        border-radius:12px;
+        padding:0 12px;
+        background:#fff;
+      }
+      .field select{
+        width:100%;
+        min-height:42px;
+        border:1px solid rgba(0,77,255,.14);
+        border-radius:12px;
+        padding:0 12px;
+        background:#fff;
+      }
+      .button-row{display:flex;gap:10px;flex-wrap:wrap}
+      .btn{
+        min-height:44px;
+        padding:0 16px;
+        border-radius:12px;
+        border:1px solid rgba(0,77,255,.14);
+        background:#fff;
+        color:var(--ink);
+        font-weight:800;
+        cursor:pointer;
+        text-decoration:none;
+      }
+      .btn:hover{background:#eef5ff}
+      .btn.primary{
+        background:linear-gradient(180deg,#1d4ed8 0%, #0f52ff 100%);
+        border-color:#0f52ff;
+        color:#fff;
+      }
+      .btn.primary:hover{filter:brightness(.98)}
+      .btn.small{min-height:34px;padding:0 12px;font-size:13px;border-radius:999px}
+
+      .download-strip{
+        margin-top:14px;
+        display:none;
+        justify-content:space-between;
+        gap:12px;
+        align-items:center;
+        padding:16px 18px;
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:16px;
+        background:#fff;
+      }
+      .download-strip.show{display:flex}
+      .download-strip .title{font-weight:800}
+      .download-strip .sub{color:var(--muted);font-size:13px;margin-top:4px}
+      .section-tools{
+        display:flex;
+        justify-content:flex-end;
+        margin-top:14px;
+      }
+
+      .meta-table{
+        margin-top:14px;
+        overflow:auto;
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:16px;
+        background:#fff;
+      }
+      table{width:100%;border-collapse:collapse}
+      th,td{padding:12px 14px;border-bottom:1px solid rgba(0,77,255,.08);text-align:left;font-size:13px;white-space:nowrap}
+      th{background:var(--sheet-blue);color:#0f172a;font-weight:900}
+      tr:last-child td{border-bottom:none}
+      .status-tag{
+        display:inline-flex;
+        align-items:center;
+        min-height:28px;
+        padding:0 10px;
+        border-radius:999px;
+        font-weight:900;
+        font-size:12px;
+      }
+      .status-tag.saved{background:#eef5ff;color:#2451c1;border:1px solid #cfdfff}
+      .status-tag.created{background:#e7f6ea;color:#137a44;border:1px solid #c3e7cf}
+      .status-tag.waiting{background:#f4f4f5;color:#4b5563;border:1px solid #dde1e7}
+
+      .summary-grid{
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:10px;
+      }
+      .summary-card{
+        padding:14px;
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:16px;
+        background:#fff;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+      }
+      .summary-card b{display:block;font-size:34px;line-height:1;margin:12px 0 6px}
+      .summary-card span{color:var(--muted);font-size:13px}
+      .summary-card.green{background:#f5fbf8}
+      .summary-card.amber{background:#fff7e6}
+      .summary-card.gray{background:#eef5ff}
+
+      .accordion-list{display:grid;gap:14px;margin-top:14px}
+      details.product-card{
+        background:#fff;
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:20px;
+        overflow:hidden;
+        box-shadow:var(--shadow);
+      }
+      summary{list-style:none;cursor:pointer}
+      summary::-webkit-details-marker{display:none}
+      .product-head{
+        display:flex;
+        justify-content:space-between;
+        gap:16px;
+        align-items:flex-start;
+        padding:18px 20px;
+        background:linear-gradient(180deg,#133a94 0%,#0f52ff 100%);
+        color:#fff;
+        border-bottom:1px solid rgba(0,77,255,.12);
+      }
+      .product-main{display:flex;gap:14px;align-items:flex-start}
+      .product-icon{
+        width:48px;height:48px;border-radius:16px;
+        background:rgba(255,255,255,.16);color:#fff;
+        display:grid;place-items:center;
+        font-size:22px;font-weight:900;
+        flex:none;
+      }
+      .product-title{display:grid;gap:4px}
+      .product-title h3{margin:0;font-size:26px;line-height:1.1}
+      .product-meta{color:rgba(255,255,255,.78);font-size:13px;font-weight:700}
+      .pill{
+        display:inline-flex;
+        align-items:center;
+        min-height:28px;
+        padding:0 10px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:900;
+      }
+      .pill.done{background:var(--green-soft);color:var(--green)}
+      .pill.progress{background:var(--amber-soft);color:var(--amber)}
+      .pill.hold{background:#f0f4ff;color:#2f5fd2}
+      .pill.todo{background:#f3f4f6;color:#475467}
+      .product-body{padding:16px 20px 20px;display:grid;gap:14px}
+      .step-box,.memo-box{
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:16px;
+        background:linear-gradient(180deg,#ffffff 0%,#f5f9ff 100%);
+        padding:14px;
+      }
+      .step-box h4,.memo-box h4{margin:0 0 10px;font-size:15px}
+      .step-table{display:grid;gap:10px}
+      .step-row{
+        display:grid;
+        grid-template-columns:120px 1fr 1fr 130px;
+        gap:10px;
+        align-items:center;
+        padding:10px 12px;
+        border:1px solid rgba(0,77,255,.10);
+        border-radius:14px;
+        background:#fff;
+      }
+      .step-row.head{
+        background:var(--sheet-blue);
+        font-size:12px;
+        color:#29405f;
+        font-weight:900;
+        text-transform:uppercase;
+        letter-spacing:.03em;
+      }
+      .step-name{font-weight:800}
+      .select{
+        min-height:34px;
+        border-radius:10px;
+        border:1px solid rgba(0,77,255,.12);
+        background:#fff;
+        padding:0 10px;
+      }
+      .select[data-action="status"]{background:#fbfdff;font-weight:800}
+      .select[data-action="owner"]{background:#fffef8}
+      .product-actions{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      }
+      .history-list{
+        margin:0;
+        padding-left:18px;
+        color:#344054;
+        line-height:1.7;
+        font-size:13px;
+      }
+
+      .two-col{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:14px;
+        margin-top:18px;
+      }
+      .qa-grid{
+        display:grid;
+        grid-template-columns:1.05fr .95fr;
+        gap:14px;
+        margin-top:16px;
+      }
+      .qa-panel,.qa-answer-card{
+        border:1px solid rgba(0,77,255,.12);
+        border-radius:18px;
+        background:linear-gradient(180deg,#ffffff 0%,#f6f9ff 100%);
+        box-shadow:0 1px 0 rgba(16,24,40,.02);
+        padding:16px;
+      }
+      .qa-panel{display:grid;gap:12px}
+      .qa-answer-card{display:grid;gap:12px;align-content:start}
+      .qa-answer-head{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:12px;
+      }
+      .qa-answer-head h3{
+        margin:0;
+        font-size:18px;
+      }
+      .qa-answer-head p{
+        margin:6px 0 0;
+        color:var(--muted);
+        font-size:13px;
+      }
+      .qa-context{
+        padding:12px 14px;
+        border-radius:14px;
+        background:#eaf2ff;
+        border:1px solid rgba(0,77,255,.12);
+        color:#27415f;
+        font-size:13px;
+        line-height:1.6;
+      }
+      .qa-answer-body{
+        min-height:240px;
+        padding:14px;
+        border-radius:14px;
+        border:1px solid rgba(0,77,255,.12);
+        background:#fff;
+        color:#20304a;
+        white-space:pre-wrap;
+        line-height:1.7;
+        font-size:14px;
+      }
+      .qa-answer-body.is-loading{
+        color:#27415f;
+        background:linear-gradient(180deg,#f8fbff 0%,#eef5ff 100%);
+      }
+      .qa-answer-body.is-error{
+        color:#a61b1b;
+        background:#fff5f5;
+        border-color:#f4c2c2;
+      }
+      .qa-debug{
+        border:1px dashed rgba(0,77,255,.18);
+        border-radius:14px;
+        background:#fbfdff;
+        padding:12px 14px;
+      }
+      .qa-debug summary{
+        font-weight:800;
+        cursor:pointer;
+      }
+      .qa-debug pre{
+        margin:10px 0 0;
+        white-space:pre-wrap;
+        word-break:break-word;
+        font-size:12px;
+        line-height:1.6;
+        color:#24324a;
+      }
+      .textarea{
+        width:100%;
+        min-height:146px;
+        resize:vertical;
+        border:1px solid var(--line);
+        border-radius:14px;
+        padding:12px;
+        background:#fff;
+      }
+      .footer-note{margin-top:12px;color:var(--muted);font-size:13px}
+      .sr-only{position:absolute!important;clip:rect(1px,1px,1px,1px);padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden}
+
+      @media (max-width: 1120px){
+        .stats{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+        .upload-grid,.two-col,.qa-grid{grid-template-columns:1fr}
+        .summary-grid{grid-template-columns:1fr}
+        .step-row{grid-template-columns:1fr 1fr}
+        .step-row.head{display:none}
+        .hero-side{min-width:0;justify-items:stretch}
+        .hero-actions{top:18px;right:18px}
+      }
+      @media (max-width: 720px){
+        .page{padding:14px}
+        .hero,.section{border-radius:18px}
+        .stats{grid-template-columns:1fr}
+        .product-head{flex-direction:column}
+        .step-row{grid-template-columns:1fr}
+        .download-strip{flex-direction:column;align-items:flex-start}
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-top">
+          <div>
+            <div class="eyebrow">Support Agent MVP</div>
+            <h1>지원 Agent</h1>
+            <p class="lead">가이드라인과 RD 원본파일을 업로드하면 가이드라인을 분석해 `시스템반영_RD.xlsx`를 생성하고, 변경이력과 상품별 결과를 함께 관리합니다.</p>
+          </div>
+          <div class="hero-side">
+            <div class="stats">
+              <article class="stat"><small>전체 파일 수</small><b id="stat-files">0</b><span>업로드 누적 파일</span></article>
+              <article class="stat"><small>상품 수</small><b id="stat-products">0</b><span>변환 후 생성된 상품</span></article>
+              <article class="stat"><small>완료 건수</small><b id="stat-done">0</b><span>완료 상태 상품</span></article>
+              <article class="stat"><small>보류 건수</small><b id="stat-hold">0</b><span>검토 필요 상품</span></article>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn small" type="button" id="full-reset-btn">전체새로고침</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="upload">
+        <div class="section-head">
+          <div>
+            <h2>파일 업로드</h2>
+            <p>Drag & Drop 또는 파일 선택으로 가이드라인 파일과 RD 원본파일을 올립니다. 업로드 메타정보는 로컬 저장소에 보관됩니다.</p>
+          </div>
+          <div class="chip-row">
+            <span class="chip violet">지원 형식: xlsx · xls · csv · docx · pdf</span>
+            <span class="chip green">업로더 입력 가능</span>
+          </div>
+        </div>
+        <div class="sheet-banner">
+          <div class="label">입력 안내</div>
+          <div class="text">아래 노란색 영역에 가이드라인과 RD 원본을 업로드하면, 원본 서식은 유지하고 변경된 셀만 색으로 표시합니다.</div>
+        </div>
+
+        <div class="upload-shell">
+          <div class="upload-grid">
+            <div class="drop-list">
+              <label class="drop-card" id="guideline-drop" for="guideline-input">
+                <div class="drop-top">
+                  <div>
+                    <b>상품 가이드라인</b>
+                    <div class="mini-note">상품명, 상품코드, 보험코드, 단일건 한도 등을 읽는 입력 파일</div>
+                  </div>
+                  <span class="chip">입력</span>
+                </div>
+                <div class="file-stack" id="guideline-file-card">
+                  <div class="file-line"><strong>대기</strong><span>업로드 파일 없음</span></div>
+                </div>
+              </label>
+              <label class="drop-card" id="rd-drop" for="rd-input">
+                <div class="drop-top">
+                  <div>
+                    <b>RD 원본파일</b>
+                    <div class="mini-note">시스템반영_RD.xlsx를 만들 때 기준이 되는 원본 파일</div>
+                  </div>
+                  <span class="chip amber">입력</span>
+                </div>
+                <div class="file-stack" id="rd-file-card">
+                  <div class="file-line"><strong>대기</strong><span>업로드 파일 없음</span></div>
+                </div>
+              </label>
+            </div>
+
+            <div class="controls">
+              <div class="field">
+                <label for="uploader-name">업로더</label>
+                <input id="uploader-name" type="text" value="현재 사용자" />
+              </div>
+            <div class="button-row">
+                <button class="btn" type="button" data-pick="guideline-input">가이드라인 선택</button>
+                <button class="btn" type="button" data-pick="rd-input">RD 원본 선택</button>
+                <button class="btn primary" type="button" id="convert-btn">변환하기</button>
+                <button class="btn" type="button" id="file-reset-btn">파일 새로고침</button>
+              </div>
+              <div class="mini-note">변환 대상은 스프레드시트 파일입니다. docx/pdf는 메타 저장용으로 업로드할 수 있습니다.</div>
+              <div class="chip-row">
+                <span class="chip">업로드 파일 수 <b id="upload-count" style="margin-left:6px;">0</b></span>
+                <span class="chip">최근 변환 <b id="last-convert" style="margin-left:6px;">-</b></span>
+              </div>
+            </div>
+          </div>
+
+          <div id="download-strip" class="download-strip">
+            <div>
+              <div class="title">시스템반영_RD.xlsx 생성 완료</div>
+              <div class="sub">생성된 파일을 다운로드하거나, 저장 버튼으로 상품 목록에 누적할 수 있습니다.</div>
+            </div>
+            <div class="button-row">
+              <a id="download-link" class="btn primary" href="#" download="시스템반영_RD.xlsx">다운로드</a>
+              <button class="btn" type="button" id="save-btn" disabled>저장</button>
+            </div>
+          </div>
+
+          <div class="meta-table" aria-label="파일 메타정보">
+            <table>
+              <thead>
+                <tr>
+                  <th>파일명</th>
+                  <th>유형</th>
+                  <th>업로드일시</th>
+                  <th>업로더</th>
+                  <th>상태</th>
+                  <th>삭제</th>
+                </tr>
+              </thead>
+              <tbody id="upload-meta-body">
+                <tr><td colspan="6">아직 업로드된 파일이 없습니다.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <input class="sr-only" id="guideline-input" type="file" accept=".xlsx,.xls,.csv,.docx,.pdf" />
+        <input class="sr-only" id="rd-input" type="file" accept=".xlsx,.xls,.csv,.docx,.pdf" />
+      </section>
+
+      <section class="section" id="products">
+        <div class="section-head">
+          <div>
+            <h2>상품 목록</h2>
+            <p>변환 후 저장한 상품만 누적되며, 상품명 기준으로 1건만 표시됩니다.</p>
+          </div>
+          <div class="chip-row">
+            <span class="chip green">미착수 / 진행중 / 보류 / 완료</span>
+            <span class="chip red">저장된 상품만 표시</span>
+          </div>
+        </div>
+        <div class="sheet-banner">
+          <div class="label">검토 포인트</div>
+          <div class="text">상품별 RD, 기계약합산, 전산심사를 각각 관리하고, 완료 여부는 담당자가 직접 상태로 입력합니다.</div>
+        </div>
+
+        <div class="accordion-list" id="product-list">
+          <div class="memo-box">
+            <h4>아직 등록된 상품이 없습니다</h4>
+            <div class="mini-note">가이드라인과 RD 원본파일을 업로드한 뒤 변환하고, 저장을 눌러 상품 목록에 쌓아주세요.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="qa">
+        <div class="section-head">
+          <div>
+            <h2>비교 질의 / OpenAI</h2>
+            <p>저장된 상품을 선택하고 질문하면, 로컬 프록시를 통해 실제 OpenAI 답변을 표시합니다.</p>
+          </div>
+          <div class="chip-row">
+            <span class="chip violet">실답변 표시</span>
+            <span class="chip green">API 키는 서버에서만 사용</span>
+          </div>
+        </div>
+        <div class="sheet-banner">
+          <div class="label">질의 흐름</div>
+          <div class="text">상품을 선택한 뒤 질문을 입력하면, 선택 상품의 코드/보험코드/최근 파일 정보를 함께 보내 비교 질문에 대한 응답을 받습니다.</div>
+        </div>
+
+        <div class="qa-grid">
+          <div class="qa-panel">
+            <div class="field">
+              <label for="qa-product-select">대상 상품</label>
+              <select id="qa-product-select"></select>
+            </div>
+            <div class="qa-context" id="qa-context">상품을 선택하면 기준 파일 정보와 현재 상태가 표시됩니다.</div>
+            <div class="field">
+              <label for="qa-question">질문</label>
+              <textarea id="qa-question" class="textarea" placeholder="예: 암진단특약의 일반/간편 한도가 같은데 자동반영 가능한가요?"></textarea>
+            </div>
+            <div class="button-row">
+              <button class="btn primary" type="button" id="qa-ask-btn">OpenAI 답변 받기</button>
+              <button class="btn" type="button" id="qa-clear-btn">질문 초기화</button>
+            </div>
+            <div class="mini-note">실답변을 보려면 node support-agent-openai-proxy.mjs 로 로컬 프록시를 먼저 실행해 주세요. 응답이 없으면 이 영역에 오류가 표시됩니다.</div>
+            <details class="qa-debug">
+              <summary>OpenAI로 보내는 업로드 메타정보 미리보기</summary>
+              <pre id="qa-payload-preview">아직 선택된 상품이 없습니다.</pre>
+            </details>
+          </div>
+          <div class="qa-answer-card">
+            <div class="qa-answer-head">
+              <div>
+                <h3>실답변 표시</h3>
+                <p>선택된 상품의 비교 패키지를 바탕으로 받은 응답이 그대로 노출됩니다.</p>
+              </div>
+              <span class="chip violet" id="qa-status-chip">대기</span>
+            </div>
+            <div id="qa-answer" class="qa-answer-body">아직 질문이 없습니다.</div>
+          </div>
+        </div>
+      </section>
+
+      <p class="footer-note">이 페이지는 로컬 프로토타입입니다. 실제 서비스로 쓰려면 서버 저장과 배포 링크가 추가로 필요합니다.</p>
+    </main>
+
+    <script>
+      const STORAGE_KEY = "support-agent-mvp-v2";
+      const STATUS_OPTIONS = ["미착수", "진행중", "보류", "완료"];
+      const ASSIGNEES = ["미지정", "김지원", "박현수", "홍길동", "김영희", "이서연", "최현수"];
+      const FILE_ACCEPT = ".xlsx,.xls,.csv,.docx,.pdf";
+      const OPENAI_PROXY_URL = "http://127.0.0.1:8787/api/openai-answer";
+
+      const runtime = {
+        guidelineFile: null,
+        rdFile: null,
+        pendingProducts: [],
+        generatedUrl: "",
+        generatedName: "",
+        generatedBuffer: null,
+        outputSheetUrlMap: {},
+        fileInsights: {
+          guideline: null,
+          rd: null,
+        },
+        qaSelectedProductId: "",
+        qaBusy: false,
+        qaStatus: "대기",
+        qaAnswer: "",
+        qaError: "",
+      };
+
+      const state = loadState();
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            return {
+              uploaderName: "현재 사용자",
+              memo: "일반/간편 한도 차등 시 룰 검토 필요",
+              uploads: [],
+              products: [],
+              pendingProducts: [],
+              history: [],
+            };
+          }
+          const parsed = JSON.parse(raw);
+          return {
+            uploaderName: parsed.uploaderName || "현재 사용자",
+            memo: parsed.memo || "",
+            uploads: Array.isArray(parsed.uploads) ? parsed.uploads : [],
+            products: normalizeSavedProducts(Array.isArray(parsed.products) ? parsed.products : []),
+            pendingProducts: Array.isArray(parsed.pendingProducts) ? parsed.pendingProducts : [],
+            history: Array.isArray(parsed.history) ? parsed.history : [],
+          };
+        } catch {
+          return {
+            uploaderName: "현재 사용자",
+            memo: "일반/간편 한도 차등 시 룰 검토 필요",
+            uploads: [],
+            products: [],
+            pendingProducts: [],
+            history: [],
+          };
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          uploaderName: state.uploaderName,
+          memo: state.memo,
+          uploads: state.uploads,
+          products: state.products,
+          pendingProducts: state.pendingProducts,
+          history: state.history,
+        }));
+      }
+
+      function nowText() {
+        return new Date().toLocaleString("sv-SE", { hour12: false }).replace("T", " ").slice(0, 19);
+      }
+
+      function norm(value) {
+        return value === null || value === undefined ? "" : String(value).trim();
+      }
+
+      function escapeHtml(value) {
+        return norm(value).replace(/[&<>"']/g, (ch) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        }[ch]));
+      }
+
+      function extOf(name) {
+        return (name.split(".").pop() || "").toLowerCase();
+      }
+
+      function base64ToUint8Array(base64) {
+        const binary = atob(base64.replace(/\s+/g, ""));
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      function setCellValue(sheet, ref, value) {
+        if (!sheet[ref]) sheet[ref] = {};
+        sheet[ref].v = value;
+        sheet[ref].t = typeof value === "number" ? "n" : "s";
+      }
+
+      function normCompare(value) {
+        return value === null || value === undefined ? "" : String(value).trim();
+      }
+
+      function setCellValueIfChanged(sheet, ref, value, changedRefs) {
+        const before = normCompare(sheet?.[ref]?.v);
+        const after = normCompare(value);
+        setCellValue(sheet, ref, value);
+        if (before !== after) changedRefs.push(ref);
+      }
+
+      function safeId(prefix) {
+        return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+      }
+
+      function productKey(product) {
+        return `${norm(product.productCode)}|${norm(product.insuranceCode)}`;
+      }
+
+      function productGroupKey(product) {
+        return norm(product.productName || product.name || product.productCode || product.insuranceCode);
+      }
+
+      function dedupeByKey(items, keyFn) {
+        const map = new Map();
+        items.forEach((item) => {
+          map.set(keyFn(item), item);
+        });
+        return Array.from(map.values());
+      }
+
+      function normalizeSavedProduct(product) {
+        const items = Array.isArray(product.items) && product.items.length ? product.items : [product];
+        const productName = norm(product.productName || product.name || items[0]?.productName || items[0]?.name);
+        const productCode = norm(product.productCode || items[0]?.productCode);
+        const insuranceCodes = Array.from(new Set(items.map((item) => norm(item.insuranceCode)).filter(Boolean)));
+        return {
+          ...product,
+          id: product.id || safeId("prd"),
+          name: productName || "상품",
+          productName: productName || "상품",
+          productCode,
+          insuranceCode: insuranceCodes[0] || norm(product.insuranceCode),
+          insuranceCodes,
+          items,
+          createdAt: product.createdAt || nowText(),
+          steps: product.steps || {
+            rd: { status: "미착수", owner: "미지정", updatedAt: "", comment: "" },
+            calc: { status: "미착수", owner: "미지정", updatedAt: "", comment: "" },
+            exam: { status: "미착수", owner: "미지정", updatedAt: "", comment: "" },
+          },
+          history: Array.isArray(product.history) ? product.history : [],
+        };
+      }
+
+      function normalizeSavedProducts(products) {
+        const grouped = new Map();
+        products.forEach((product) => {
+          const base = productGroupKey(product);
+          const current = grouped.get(base);
+          if (!current) {
+            grouped.set(base, normalizeSavedProduct(product));
+            return;
+          }
+          const items = [...(current.items || []), ...(Array.isArray(product.items) ? product.items : [product])];
+          current.items = dedupeByKey(items, (item) => `${norm(item.productCode)}|${norm(item.insuranceCode)}`);
+          current.insuranceCodes = Array.from(new Set([...(current.insuranceCodes || []), ...current.items.map((item) => norm(item.insuranceCode)).filter(Boolean)]));
+          current.insuranceCode = current.insuranceCodes[0] || current.insuranceCode;
+          current.productCode = current.productCode || norm(product.productCode) || norm(current.productCode);
+          current.name = current.productName || current.name;
+          current.productName = current.productName || current.name;
+          current.history = Array.isArray(current.history) ? current.history : [];
+        });
+        return Array.from(grouped.values());
+      }
+
+      function applyCellStyle(sheet, cellRef, style) {
+        if (!sheet[cellRef]) return;
+        sheet[cellRef].s = style;
+      }
+
+      function styleCellBlock(sheet, startRow, endRow, startCol, endCol, style) {
+        for (let r = startRow; r <= endRow; r += 1) {
+          for (let c = startCol; c <= endCol; c += 1) {
+            applyCellStyle(sheet, XLSX.utils.encode_cell({ r, c }), style);
+          }
+        }
+      }
+
+      function styleHistorySheet(sheet) {
+        sheet["!cols"] = [
+          { wpx: 108 }, { wpx: 108 }, { wpx: 92 }, { wpx: 72 }, { wpx: 96 },
+          { wpx: 104 }, { wpx: 126 }, { wpx: 120 }, { wpx: 190 }, { wpx: 96 }, { wpx: 250 },
+        ];
+        sheet["!rows"] = [{ hpx: 26 }, { hpx: 24 }, { hpx: 22 }, { hpx: 22 }, { hpx: 22 }, { hpx: 22 }];
+        const titleStyle = {
+          font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
+          fill: { patternType: "solid", fgColor: { rgb: "1F3A5F" } },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+        const headerStyle = {
+          font: { bold: true, color: { rgb: "1F3A5F" } },
+          fill: { patternType: "solid", fgColor: { rgb: "D9EAF7" } },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "B7C9DD" } },
+            bottom: { style: "thin", color: { rgb: "B7C9DD" } },
+            left: { style: "thin", color: { rgb: "B7C9DD" } },
+            right: { style: "thin", color: { rgb: "B7C9DD" } },
+          },
+        };
+        const bodyStyle = {
+          fill: { patternType: "solid", fgColor: { rgb: "FFFFFF" } },
+          font: { color: { rgb: "2F3B52" } },
+          alignment: { vertical: "top", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "D9E2EF" } },
+            bottom: { style: "thin", color: { rgb: "D9E2EF" } },
+            left: { style: "thin", color: { rgb: "D9E2EF" } },
+            right: { style: "thin", color: { rgb: "D9E2EF" } },
+          },
+        };
+        const range = XLSX.utils.decode_range(sheet["!ref"] || "A1:K1");
+        styleCellBlock(sheet, 0, 0, 0, range.e.c, titleStyle);
+        styleCellBlock(sheet, 1, 1, 0, range.e.c, headerStyle);
+        styleCellBlock(sheet, 2, range.e.r, 0, range.e.c, bodyStyle);
+      }
+
+      function styleSupportSheet(sheet) {
+        sheet["!cols"] = [
+          { wpx: 108 }, { wpx: 88 }, { wpx: 108 }, { wpx: 120 }, { wpx: 116 }, { wpx: 108 }, { wpx: 180 }, { wpx: 240 },
+        ];
+        const titleStyle = {
+          font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 },
+          fill: { patternType: "solid", fgColor: { rgb: "1F3A5F" } },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+        const headerStyle = {
+          font: { bold: true, color: { rgb: "1F3A5F" } },
+          fill: { patternType: "solid", fgColor: { rgb: "D9EAF7" } },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "B7C9DD" } },
+            bottom: { style: "thin", color: { rgb: "B7C9DD" } },
+            left: { style: "thin", color: { rgb: "B7C9DD" } },
+            right: { style: "thin", color: { rgb: "B7C9DD" } },
+          },
+        };
+        const bodyStyle = {
+          fill: { patternType: "solid", fgColor: { rgb: "FFFFFF" } },
+          alignment: { vertical: "top", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "D9E2EF" } },
+            bottom: { style: "thin", color: { rgb: "D9E2EF" } },
+            left: { style: "thin", color: { rgb: "D9E2EF" } },
+            right: { style: "thin", color: { rgb: "D9E2EF" } },
+          },
+        };
+        const range = XLSX.utils.decode_range(sheet["!ref"] || "A1:H1");
+        styleCellBlock(sheet, 0, 0, 0, range.e.c, titleStyle);
+        styleCellBlock(sheet, 1, 1, 0, range.e.c, headerStyle);
+        styleCellBlock(sheet, 2, range.e.r, 0, range.e.c, bodyStyle);
+      }
+
+      function styleSummarySheet(sheet) {
+        sheet["!cols"] = Array.from({ length: 10 }, () => ({ wpx: 115 }));
+        const titleStyle = {
+          font: { bold: true, color: { rgb: "FFFFFF" }, sz: 16 },
+          fill: { patternType: "solid", fgColor: { rgb: "1F3A5F" } },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        };
+        const blockGreen = {
+          font: { bold: true, color: { rgb: "156C3D" }, sz: 14 },
+          fill: { patternType: "solid", fgColor: { rgb: "E2F0D9" } },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        };
+        const blockOrange = {
+          font: { bold: true, color: { rgb: "B45F06" }, sz: 14 },
+          fill: { patternType: "solid", fgColor: { rgb: "FCE4D6" } },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        };
+        const bodyGreen = {
+          fill: { patternType: "solid", fgColor: { rgb: "F3FBF5" } },
+          font: { color: { rgb: "23543A" } },
+          border: {
+            top: { style: "thin", color: { rgb: "D7E8DC" } },
+            bottom: { style: "thin", color: { rgb: "D7E8DC" } },
+            left: { style: "thin", color: { rgb: "D7E8DC" } },
+            right: { style: "thin", color: { rgb: "D7E8DC" } },
+          },
+          alignment: { vertical: "top", wrapText: true },
+        };
+        const bodyOrange = {
+          fill: { patternType: "solid", fgColor: { rgb: "FFF7EF" } },
+          font: { color: { rgb: "8A4F12" } },
+          border: {
+            top: { style: "thin", color: { rgb: "E9D2BC" } },
+            bottom: { style: "thin", color: { rgb: "E9D2BC" } },
+            left: { style: "thin", color: { rgb: "E9D2BC" } },
+            right: { style: "thin", color: { rgb: "E9D2BC" } },
+          },
+          alignment: { vertical: "top", wrapText: true },
+        };
+        const range = XLSX.utils.decode_range(sheet["!ref"] || "A1:J1");
+        styleCellBlock(sheet, 0, 1, 0, range.e.c, titleStyle);
+        styleCellBlock(sheet, 3, Math.max(5, Math.floor(range.e.r / 2)), 0, Math.min(4, range.e.c), blockGreen);
+        styleCellBlock(sheet, 3, Math.max(5, Math.floor(range.e.r / 2)), 5, range.e.c, blockOrange);
+        styleCellBlock(sheet, Math.max(7, Math.floor(range.e.r / 2) + 1), range.e.r, 0, range.e.c, bodyGreen);
+        styleCellBlock(sheet, Math.max(12, Math.floor(range.e.r / 2) + 6), range.e.r, 0, range.e.c, bodyOrange);
+      }
+
+      function sheet1HighlightStyle(kind = "yellow") {
+        if (kind === "orange") {
+          return {
+            fill: { patternType: "solid", fgColor: { rgb: "FCE4D6" } },
+            font: { bold: true, color: { rgb: "A64D00" } },
+            border: {
+              top: { style: "thin", color: { rgb: "D79B6B" } },
+              bottom: { style: "thin", color: { rgb: "D79B6B" } },
+              left: { style: "thin", color: { rgb: "D79B6B" } },
+              right: { style: "thin", color: { rgb: "D79B6B" } },
+            },
+            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+          };
+        }
+        return {
+          fill: { patternType: "solid", fgColor: { rgb: "FFF2CC" } },
+          font: { bold: true, color: { rgb: "7F6000" } },
+          border: {
+            top: { style: "thin", color: { rgb: "D6B656" } },
+            bottom: { style: "thin", color: { rgb: "D6B656" } },
+            left: { style: "thin", color: { rgb: "D6B656" } },
+            right: { style: "thin", color: { rgb: "D6B656" } },
+          },
+          alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        };
+      }
+
+      function styleSheet1Highlight(sheet, refs = [], kind = "yellow") {
+        const style = sheet1HighlightStyle(kind);
+        refs.forEach((ref) => applyCellStyle(sheet, ref, style));
+      }
+
+      function findSheet1RowForProduct(sheet, product) {
+        if (!sheet || !product) return null;
+        const range = XLSX.utils.decode_range(sheet["!ref"] || "A1:O1");
+        const targetInsuranceCode = norm(product.insuranceCode);
+        const targetName = norm(product.name);
+        for (let row = Math.max(4, range.s.r); row <= range.e.r; row += 1) {
+          const insuranceCode = norm(sheet[XLSX.utils.encode_cell({ r: row, c: 5 })]?.v);
+          const name = norm(sheet[XLSX.utils.encode_cell({ r: row, c: 3 })]?.v);
+          if (targetInsuranceCode && insuranceCode === targetInsuranceCode) return row;
+          if (!targetInsuranceCode && targetName && name === targetName) return row;
+          if (targetInsuranceCode && !insuranceCode && targetName && name === targetName) return row;
+        }
+        return null;
+      }
+
+      function addHistory(message, meta = {}) {
+        state.history.unshift({
+          id: safeId("hist"),
+          at: nowText(),
+          message,
+          ...meta,
+        });
+        state.history = state.history.slice(0, 50);
+        saveState();
+      }
+
+      function parseSheetToAoA(workbook, preferredSheetNames = []) {
+        const sheetName = preferredSheetNames.find((name) => workbook.SheetNames.includes(name)) || workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        if (!sheet) return [];
+        return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+      }
+
+      function findHeaderRow(rows, patterns) {
+        for (let i = 0; i < rows.length; i += 1) {
+          const headers = rows[i].map((cell) => norm(cell));
+          const hit = patterns.some((pattern) => headers.some((header) => header.includes(pattern)));
+          if (hit) return { index: i, headers };
+        }
+        return null;
+      }
+
+      function findCol(headers, patterns) {
+        return headers.findIndex((header) => patterns.some((pattern) => header.includes(pattern)));
+      }
+
+      function findExactCol(headers, names) {
+        const normalized = names.map((name) => norm(name));
+        return headers.findIndex((header) => normalized.includes(norm(header)));
+      }
+
+      function findAliasCol(headers, aliases) {
+        const exactIndex = findExactCol(headers, aliases);
+        if (exactIndex >= 0) return exactIndex;
+        return findCol(headers, aliases);
+      }
+
+      function renderUploads() {
+        const body = document.getElementById("upload-meta-body");
+        document.getElementById("upload-count").textContent = String(state.uploads.length);
+        if (!state.uploads.length) {
+          body.innerHTML = `<tr><td colspan="6">아직 업로드된 파일이 없습니다.</td></tr>`;
+          return;
+        }
+        body.innerHTML = state.uploads.slice(0, 12).map((item) => `
+          <tr>
+            <td>${escapeHtml(item.fileName)}</td>
+            <td>${escapeHtml(item.kind)}</td>
+            <td>${escapeHtml(item.at)}</td>
+            <td>${escapeHtml(item.uploader)}</td>
+            <td><span class="status-tag ${item.status === "생성됨" ? "created" : item.status === "저장됨" ? "saved" : "waiting"}">${escapeHtml(item.status)}</span></td>
+            <td><button class="btn small" type="button" data-upload-delete="${escapeHtml(item.id)}">삭제</button></td>
+          </tr>
+        `).join("");
+      }
+
+      function getProductOverallStatus(product) {
+        const statuses = Object.values(product.steps).map((step) => step.status);
+        if (statuses.some((status) => status === "보류")) return "보류";
+        if (statuses.every((status) => status === "완료")) return "완료";
+        if (statuses.some((status) => status === "진행중")) return "진행중";
+        return "미착수";
+      }
+
+      function renderSummary() {
+        document.getElementById("stat-files").textContent = String(state.uploads.length);
+        document.getElementById("stat-products").textContent = String(state.products.length);
+        const counts = { done: 0, progress: 0, hold: 0 };
+        state.products.forEach((product) => {
+          const status = getProductOverallStatus(product);
+          if (status === "완료") counts.done += 1;
+          else if (status === "보류") counts.hold += 1;
+          else counts.progress += 1;
+        });
+        document.getElementById("stat-done").textContent = String(counts.done);
+        document.getElementById("stat-hold").textContent = String(counts.hold);
+        const saveBtn = document.getElementById("save-btn");
+        if (saveBtn) saveBtn.disabled = !(state.pendingProducts && state.pendingProducts.length);
+      }
+
+      function renderHistory() {
+        const target = document.getElementById("recent-history");
+        if (!state.history.length) {
+          target.innerHTML = `<li>아직 변경 이력이 없습니다.</li>`;
+          return;
+        }
+        target.innerHTML = state.history.slice(0, 6).map((item) => `<li>[${escapeHtml(item.at)}] ${escapeHtml(item.message)}</li>`).join("");
+      }
+
+      function renderMemo() {
+        const memoInput = document.getElementById("memo-input");
+        if (memoInput) memoInput.value = state.memo || "";
+      }
+
+      function renderProducts() {
+        state.products = normalizeSavedProducts(state.products);
+        const list = document.getElementById("product-list");
+        if (!state.products.length) {
+          const pendingCount = state.pendingProducts?.length || 0;
+          list.innerHTML = `
+            <div class="memo-box">
+              <h4>아직 등록된 상품이 없습니다</h4>
+              <div class="mini-note">${pendingCount ? `변환 결과 ${pendingCount}건이 저장 대기 중입니다. [저장]을 눌러 상품 목록에 쌓아주세요.` : "가이드라인과 RD 원본파일을 업로드한 뒤 변환하고, 저장을 눌러 상품 목록에 쌓아주세요."}</div>
+            </div>`;
+          return;
+        }
+        list.innerHTML = state.products.map((product) => {
+          const overall = getProductOverallStatus(product);
+          const codeSummary = (product.insuranceCodes || [product.insuranceCode]).filter(Boolean).join(" / ");
+          const itemCount = (product.items || []).length || 1;
+          const stepRows = ["rd", "calc", "exam"].map((key) => {
+            const step = product.steps[key];
+            return `
+              <div class="step-row">
+                <div class="step-name">${escapeHtml({ rd: "RD", calc: "기계약합산", exam: "전산심사" }[key])}</div>
+                <div>
+                  <select class="select" data-action="status" data-product-id="${product.id}" data-step="${key}">
+                    ${STATUS_OPTIONS.map((opt) => `<option value="${opt}" ${opt === step.status ? "selected" : ""}>${opt}</option>`).join("")}
+                  </select>
+                </div>
+                <div>
+                  <select class="select" data-action="owner" data-product-id="${product.id}" data-step="${key}">
+                    ${ASSIGNEES.map((name) => `<option value="${name}" ${name === step.owner ? "selected" : ""}>${name}</option>`).join("")}
+                  </select>
+                </div>
+                <div class="mini-note">${escapeHtml(step.updatedAt || "-")}</div>
+              </div>
+            `;
+          }).join("");
+
+          const historyList = (product.history || []).slice(0, 4).map((item) => `<li>[${escapeHtml(item.at)}] ${escapeHtml(item.message)}</li>`).join("") || "<li>아직 변경 이력이 없습니다.</li>";
+
+          return `
+            <details class="product-card" open>
+              <summary class="product-head">
+                <div class="product-main">
+                  <div class="product-icon">${escapeHtml(productDisplayName(product).slice(0, 1) || "●")}</div>
+                  <div class="product-title">
+                    <h3>${escapeHtml(productDisplayName(product))}</h3>
+                    <div class="product-meta">상품코드: ${escapeHtml(product.productCode)} · 보험코드: ${escapeHtml(codeSummary)} · 최근 파일: ${escapeHtml(product.sourceFileName || "source")} · 생성일시: ${escapeHtml(product.createdAt)}</div>
+                    <div class="chip-row">
+                      <span class="pill ${overall === "완료" ? "done" : overall === "보류" ? "hold" : overall === "진행중" ? "progress" : "todo"}">${escapeHtml(overall)}</span>
+                      <span class="chip amber">관련 특약 ${itemCount}건</span>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <div class="product-body">
+                <div class="step-box">
+                  <h4>진행 항목</h4>
+                  <div class="step-table">
+                    <div class="step-row head">
+                      <div>항목</div><div>진행 상태</div><div>담당자</div><div>최종 업데이트</div>
+                    </div>
+                    ${stepRows}
+                  </div>
+                </div>
+                <div class="step-box">
+                  <h4>진행 이력</h4>
+                  <ul class="history-list">${historyList}</ul>
+                </div>
+              </div>
+            </details>
+          `;
+        }).join("");
+      }
+
+      function productLabelForSelect(product) {
+        const name = productDisplayName(product);
+        const code = norm(product?.productCode) || "-";
+        return `${name} (${code})`;
+      }
+
+      function getQaProducts() {
+        return state.pendingProducts.length ? state.pendingProducts : state.products;
+      }
+
+      function getSelectedQaProduct() {
+        const products = getQaProducts();
+        const selected = products.find((item) => item.id === runtime.qaSelectedProductId);
+        return selected || products[0] || null;
+      }
+
+      function getAllQaItems() {
+        const products = getQaProducts();
+        return products.flatMap((product) => {
+          if (Array.isArray(product?.items) && product.items.length) return product.items;
+          return [product];
+        }).filter(Boolean);
+      }
+
+      function getFocusedQaItem(productsOrProduct, question) {
+        const items = Array.isArray(productsOrProduct)
+          ? productsOrProduct.flatMap((product) => (Array.isArray(product?.items) && product.items.length ? product.items : [product]))
+          : (Array.isArray(productsOrProduct?.items) && productsOrProduct.items.length ? productsOrProduct.items : [productsOrProduct]);
+        const q = norm(question).toLowerCase();
+        if (!q) return items[0] || (Array.isArray(productsOrProduct) ? productsOrProduct[0] : productsOrProduct);
+        const tokens = q.split(/\s+/).filter(Boolean);
+        const scored = items.map((item, index) => {
+          const haystack = [
+            productDisplayName(item),
+            labelName(item),
+            norm(item?.insuranceCode),
+            norm(item?.productCode),
+          ].join(" ").toLowerCase();
+          let score = 0;
+          tokens.forEach((token) => {
+            if (token && haystack.includes(token)) score += 2;
+          });
+          if (haystack.includes(q)) score += 5;
+          if (q.includes(norm(labelName(item)).toLowerCase())) score += 5;
+          if (q.includes(norm(item?.insuranceCode).toLowerCase())) score += 4;
+          if (index === 0) score += 0.1;
+          return { item, score };
+        }).sort((a, b) => b.score - a.score);
+        return scored[0]?.item || items[0] || (Array.isArray(productsOrProduct) ? productsOrProduct[0] : productsOrProduct);
+      }
+
+      function buildQaContext(product) {
+        if (!product) return "선택된 상품 정보가 없습니다.";
+        const steps = [
+          `RD: ${product.steps?.rd?.status || "미착수"} / 담당자 ${product.steps?.rd?.owner || "미지정"}`,
+          `기계약합산: ${product.steps?.calc?.status || "미착수"} / 담당자 ${product.steps?.calc?.owner || "미지정"}`,
+          `전산심사: ${product.steps?.exam?.status || "미착수"} / 담당자 ${product.steps?.exam?.owner || "미지정"}`,
+        ].join(" · ");
+        const files = state.uploads
+          .filter((item) => item.kind !== "변환")
+          .slice(0, 4)
+          .map((item) => `${item.kind}: ${item.fileName}`)
+          .join(" | ");
+        const guidelineInsight = runtime.fileInsights.guideline;
+        const rdInsight = runtime.fileInsights.rd;
+        return [
+          `상품명: ${productDisplayName(product)}`,
+          `상품코드: ${norm(product.productCode) || "-"}`,
+          `보험코드: ${(product.insuranceCodes || [product.insuranceCode]).filter(Boolean).join(" / ") || "-"}`,
+          `최근 파일: ${norm(product.sourceFileName) || "-"}`,
+          `상태: ${getProductOverallStatus(product)}`,
+          steps,
+          `업로드 참고: ${files || "아직 업로드된 참고 파일이 없습니다."}`,
+          `판단 요약: ${norm(product.comparisonSummary) || "없음"}`,
+          `가이드라인 요약: ${guidelineInsight ? `${guidelineInsight.fileName} / ${guidelineInsight.primarySheet || "-"} / ${guidelineInsight.rowCount ?? "-"}행` : "없음"}`,
+          `RD 요약: ${rdInsight ? `${rdInsight.fileName} / ${rdInsight.primarySheet || "-"} / ${rdInsight.rowCount ?? "-"}행` : "없음"}`,
+        ].join("\n");
+      }
+
+      function formatFileInsight(insight) {
+        if (!insight) return "없음";
+        const lines = [
+          `상태: ${insight.status || "-"}`,
+          `파일명: ${insight.fileName || "-"}`,
+          `시트수: ${insight.sheetCount ?? "-"}`,
+          `기준시트: ${insight.primarySheet || "-"}`,
+          `행수: ${insight.rowCount ?? "-"}`,
+          `헤더: ${(insight.headers || []).join(" / ") || "-"}`,
+          `미리보기:`,
+          ...(insight.preview || []).map((line) => `  ${line}`),
+        ];
+        if (insight.message) lines.push(`메시지: ${insight.message}`);
+        return lines.join("\n");
+      }
+
+      function renderQaPanel() {
+        const select = document.getElementById("qa-product-select");
+        const context = document.getElementById("qa-context");
+        const answer = document.getElementById("qa-answer");
+        const chip = document.getElementById("qa-status-chip");
+        const askBtn = document.getElementById("qa-ask-btn");
+        const payloadPreview = document.getElementById("qa-payload-preview");
+        if (!select || !context || !answer || !chip || !askBtn) return;
+
+        const products = getQaProducts();
+
+        if (!products.length) {
+          select.innerHTML = `<option value="">등록된 상품 없음</option>`;
+          select.disabled = true;
+          context.textContent = "상품을 저장한 뒤 질문할 수 있습니다.";
+          if (!runtime.qaBusy && !runtime.qaAnswer) answer.textContent = "아직 질문이 없습니다.";
+          chip.textContent = runtime.qaStatus || "대기";
+          askBtn.disabled = true;
+          if (payloadPreview) {
+            payloadPreview.textContent = JSON.stringify({
+              question: norm(document.getElementById("qa-question")?.value || ""),
+              fileInsights: runtime.fileInsights,
+            }, null, 2);
+          }
+          return;
+        }
+
+        select.disabled = false;
+        if (!runtime.qaSelectedProductId || !products.some((item) => item.id === runtime.qaSelectedProductId)) {
+          runtime.qaSelectedProductId = products[0].id;
+        }
+        select.innerHTML = products.map((product) => {
+          const selected = product.id === runtime.qaSelectedProductId ? "selected" : "";
+          const draftTag = state.pendingProducts.length ? " (변환 미저장)" : "";
+          return `<option value="${escapeHtml(product.id)}" ${selected}>${escapeHtml(productLabelForSelect(product) + draftTag)}</option>`;
+        }).join("");
+        select.value = runtime.qaSelectedProductId;
+
+        const product = getSelectedQaProduct();
+        const questionValue = norm(document.getElementById("qa-question")?.value || "");
+        const focusedItem = getFocusedQaItem(getAllQaItems(), questionValue);
+        context.textContent = buildQaContext(focusedItem);
+        chip.textContent = runtime.qaBusy ? "응답 중" : runtime.qaStatus || "대기";
+        askBtn.disabled = runtime.qaBusy;
+        if (payloadPreview) {
+          payloadPreview.textContent = JSON.stringify(buildQaPayload(product, questionValue, focusedItem), null, 2);
+        }
+
+        if (runtime.qaBusy) {
+          answer.className = "qa-answer-body is-loading";
+          answer.textContent = "OpenAI 응답을 기다리는 중입니다...";
+          return;
+        }
+        if (runtime.qaError) {
+          answer.className = "qa-answer-body is-error";
+          answer.textContent = runtime.qaError;
+          return;
+        }
+        if (runtime.qaAnswer) {
+          answer.className = "qa-answer-body";
+          answer.textContent = runtime.qaAnswer;
+          return;
+        }
+        answer.className = "qa-answer-body";
+        answer.textContent = "아직 질문이 없습니다.";
+      }
+
+      function resetQaAnswer() {
+        runtime.qaStatus = "대기";
+        runtime.qaAnswer = "";
+        runtime.qaError = "";
+        runtime.qaBusy = false;
+        renderQaPanel();
+      }
+
+      function buildQaPayload(product, question, focusedItem = null) {
+        const activeItem = focusedItem || getFocusedQaItem(product, question);
+        const generalAsIs = norm(activeItem?.limits?.generalAsIs);
+        const generalToBe = norm(activeItem?.limits?.generalToBe);
+        const simpleAsIs = norm(activeItem?.limits?.simpleAsIs);
+        const simpleToBe = norm(activeItem?.limits?.simpleToBe);
+        const individualSum = norm(activeItem?.limits?.individualSum);
+        const unit = norm(activeItem?.limits?.unit);
+        const comparisonSummary = [
+          `상품명: ${productDisplayName(activeItem)}`,
+          `상품코드: ${norm(activeItem?.productCode) || "-"}`,
+          `보험코드: ${(activeItem?.insuranceCodes || [activeItem?.insuranceCode]).filter(Boolean).join(" / ") || "-"}`,
+          `일반/건강 단일건: ${generalAsIs || "-"} -> ${generalToBe || "-"}`,
+          `간편 단일건: ${simpleAsIs || "-"} -> ${simpleToBe || "-"}`,
+          `인별합산: ${individualSum || "-"}`,
+          `가입금액단위: ${unit || "-"}`,
+        ].join("\n");
+        return {
+          question,
+          answerFocus: "generalAndSimpleLimitOnly",
+          ignoreFields: ["individualSum"],
+          product: {
+            id: activeItem?.id || product.id,
+            productName: productDisplayName(activeItem),
+            productCode: activeItem?.productCode || "",
+            insuranceCodes: (activeItem?.insuranceCodes || [activeItem?.insuranceCode]).filter(Boolean),
+            sourceFileName: activeItem?.sourceFileName || "",
+            createdAt: activeItem?.createdAt || "",
+            status: getProductOverallStatus(activeItem || product),
+            limits: {
+              generalAsIs,
+              generalToBe,
+              simpleAsIs,
+              simpleToBe,
+            },
+            reference: {
+              individualSum,
+              unit,
+              matchedColumns: activeItem?.matchedColumns || {},
+            },
+            comparisonSummary,
+            steps: {
+              rd: activeItem?.steps?.rd || {},
+              calc: activeItem?.steps?.calc || {},
+              exam: activeItem?.steps?.exam || {},
+            },
+            history: (activeItem?.history || []).slice(0, 5),
+          },
+          products: state.products.slice(0, 20).map((item) => ({
+            productName: productDisplayName(item),
+            productCode: item.productCode || "",
+            insuranceCodes: (item.insuranceCodes || [item.insuranceCode]).filter(Boolean),
+            sourceFileName: item.sourceFileName || "",
+            createdAt: item.createdAt || "",
+            status: getProductOverallStatus(item),
+          })),
+          pendingProducts: state.pendingProducts.slice(0, 20).map((item) => ({
+            productName: productDisplayName(item),
+            productCode: item.productCode || "",
+            insuranceCodes: (item.insuranceCodes || [item.insuranceCode]).filter(Boolean),
+            sourceFileName: item.sourceFileName || "",
+            createdAt: item.createdAt || "",
+            status: getProductOverallStatus(item),
+          })),
+          comparisonSummary,
+          uploads: state.uploads.slice(0, 10).map((item) => ({
+            kind: item.kind,
+            fileName: item.fileName,
+            at: item.at,
+            uploader: item.uploader,
+            status: item.status,
+          })),
+          fileInsights: {
+            guideline: runtime.fileInsights.guideline,
+            rd: runtime.fileInsights.rd,
+          },
+        };
+      }
+
+      async function askOpenAI() {
+        const product = getSelectedQaProduct();
+        const questionInput = document.getElementById("qa-question");
+        const question = norm(questionInput?.value || "");
+        const focusedItem = getFocusedQaItem(getAllQaItems(), question);
+        if (!product) {
+          alert("먼저 상품을 저장해 주세요.");
+          return;
+        }
+        if (!question) {
+          alert("질문을 입력해 주세요.");
+          return;
+        }
+        const answerNode = document.getElementById("qa-answer");
+        const chip = document.getElementById("qa-status-chip");
+        runtime.qaBusy = true;
+        runtime.qaStatus = "응답 중";
+        runtime.qaError = "";
+        runtime.qaAnswer = "";
+        if (answerNode) {
+          answerNode.className = "qa-answer-body is-loading";
+          answerNode.textContent = "OpenAI 응답을 받아오는 중입니다...";
+        }
+        if (chip) chip.textContent = "응답 중";
+        renderQaPanel();
+        try {
+          const response = await fetch(OPENAI_PROXY_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(buildQaPayload(product, question, focusedItem)),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) {
+            throw new Error(data.error || `OpenAI 응답 실패 (${response.status})`);
+          }
+          runtime.qaBusy = false;
+          runtime.qaStatus = "완료";
+          runtime.qaAnswer = norm(data.answer) || "응답이 비어 있습니다.";
+          runtime.qaError = "";
+          renderQaPanel();
+          addHistory(`OpenAI 질의 완료: ${productDisplayName(product)}`);
+        } catch (error) {
+          runtime.qaBusy = false;
+          runtime.qaStatus = "오류";
+          runtime.qaError = `OpenAI 응답 실패: ${error.message}`;
+          runtime.qaAnswer = "";
+          renderQaPanel();
+        }
+      }
+
+      function clearGeneratedOutput() {
+        if (runtime.generatedUrl) {
+          URL.revokeObjectURL(runtime.generatedUrl);
+        }
+        runtime.generatedUrl = "";
+        runtime.generatedName = "";
+        runtime.generatedBuffer = null;
+        document.getElementById("download-strip").classList.remove("show");
+      }
+
+      function resetUploadSection() {
+        runtime.guidelineFile = null;
+        runtime.rdFile = null;
+        runtime.fileInsights.guideline = null;
+        runtime.fileInsights.rd = null;
+        state.pendingProducts = [];
+        clearGeneratedOutput();
+        document.getElementById("guideline-input").value = "";
+        document.getElementById("rd-input").value = "";
+        document.getElementById("guideline-file-card").innerHTML = `<div class="file-line"><strong>대기</strong><span>업로드 파일 없음</span></div>`;
+        document.getElementById("rd-file-card").innerHTML = `<div class="file-line"><strong>대기</strong><span>업로드 파일 없음</span></div>`;
+        state.uploads = [];
+      }
+
+      function refreshFileData() {
+        const confirmReset = confirm("업로드 자료와 변환 결과만 삭제할까요? 상품 목록은 유지됩니다.");
+        if (!confirmReset) return;
+        resetUploadSection();
+        addHistory("업로드 자료 및 변환 결과 초기화");
+        saveState();
+        renderAll();
+      }
+
+      function refreshAllData() {
+        const confirmReset = confirm("업로드 자료, 변환 결과, 상품 목록까지 모두 삭제할까요?");
+        if (!confirmReset) return;
+        resetUploadSection();
+        state.products = [];
+        state.history = [];
+        localStorage.removeItem(STORAGE_KEY);
+        addHistory("전체 데이터 초기화");
+        state.history = state.history.slice(0, 1);
+        saveState();
+        renderAll();
+      }
+
+      function deleteUpload(uploadId) {
+        const target = state.uploads.find((item) => item.id === uploadId);
+        if (!target) return;
+        if (!confirm(`업로드 파일 '${target.fileName}'을 삭제할까요?`)) return;
+        state.uploads = state.uploads.filter((item) => item.id !== uploadId);
+        if (runtime.guidelineFile && target.kind === "가이드라인") runtime.guidelineFile = null;
+        if (runtime.rdFile && target.kind === "RD 원본") runtime.rdFile = null;
+        if (target.kind === "가이드라인") runtime.fileInsights.guideline = null;
+        if (target.kind === "RD 원본") runtime.fileInsights.rd = null;
+        if (target.kind === "가이드라인") document.getElementById("guideline-input").value = "";
+        if (target.kind === "RD 원본") document.getElementById("rd-input").value = "";
+        if (target.kind === "가이드라인" || target.kind === "RD 원본") {
+          state.pendingProducts = [];
+          clearGeneratedOutput();
+        }
+        addHistory(`업로드 삭제: ${target.fileName}`);
+        saveState();
+        renderAll();
+      }
+
+      function renderAll() {
+        renderUploads();
+        renderSummary();
+        renderProducts();
+        renderQaPanel();
+      }
+
+      function setFileCard(kind, file) {
+        const target = document.getElementById(kind === "guideline" ? "guideline-file-card" : "rd-file-card");
+        target.innerHTML = `
+          <div class="file-line"><strong>${escapeHtml(file.name)}</strong><span>${escapeHtml(extOf(file.name).toUpperCase())}</span></div>
+          <div class="file-line"><strong>${escapeHtml(norm(file.size ? `${Math.round(file.size / 1024)} KB` : ""))}</strong><span>${escapeHtml(nowText())}</span></div>
+        `;
+      }
+
+      function formatLimitPair(product) {
+        const asIsGeneral = norm(product?.limits?.generalAsIs);
+        const asIsSimple = norm(product?.limits?.simpleAsIs);
+        const toBeGeneral = norm(product?.limits?.generalToBe);
+        const toBeSimple = norm(product?.limits?.simpleToBe);
+        const asIs = `${asIsGeneral || "-"}~${asIsSimple || "-"}`;
+        const toBe = `${toBeGeneral || asIsGeneral || "-"}~${toBeSimple || asIsSimple || "-"}`;
+        const changed = (toBeGeneral && toBeGeneral !== asIsGeneral) || (toBeSimple && toBeSimple !== asIsSimple);
+        if (!changed) return null;
+        return `${asIs} > ${toBe}`;
+      }
+
+      function classifyLimitChange(product) {
+        const asIsGeneral = norm(product?.limits?.generalAsIs);
+        const asIsSimple = norm(product?.limits?.simpleAsIs);
+        const toBeGeneral = norm(product?.limits?.generalToBe);
+        const toBeSimple = norm(product?.limits?.simpleToBe);
+        const changed = (toBeGeneral && toBeGeneral !== asIsGeneral) || (toBeSimple && toBeSimple !== asIsSimple);
+        if (!changed) return null;
+        const aligned = !!toBeGeneral && !!toBeSimple && norm(toBeGeneral) === norm(toBeSimple);
+        return {
+          status: aligned ? "자동반영" : "룰검토필요",
+          reason: aligned ? "일반/건강과 간편 한도가 동일" : "일반/건강과 간편 한도가 상이",
+        };
+      }
+
+      function formatReviewNote(product) {
+        const asIsGeneral = norm(product?.limits?.generalAsIs);
+        const asIsSimple = norm(product?.limits?.simpleAsIs);
+        const toBeGeneral = norm(product?.limits?.generalToBe);
+        const toBeSimple = norm(product?.limits?.simpleToBe);
+        const individualSum = norm(product?.limits?.individualSum);
+        const unit = norm(product?.limits?.unit);
+        const parts = [];
+        if (asIsGeneral || asIsSimple) parts.push(`as-is ${asIsGeneral || "-"} / ${asIsSimple || "-"}`);
+        if (toBeGeneral || toBeSimple) parts.push(`to-be ${toBeGeneral || "-"} / ${toBeSimple || "-"}`);
+        if (individualSum) parts.push(`인별합산 ${individualSum}`);
+        if (unit) parts.push(`단위 ${unit}`);
+        return parts.join(" | ");
+      }
+
+      function labelName(product) {
+        return norm(product?.riderName) || norm(product?.name) || "특약";
+      }
+
+      function productDisplayName(product) {
+        return norm(product?.productName) || norm(product?.name) || "상품";
+      }
+
+      function captureUpload(kind, file) {
+        if (!file) return;
+        if (kind === "guideline") runtime.guidelineFile = file;
+        if (kind === "rd") runtime.rdFile = file;
+        if (kind === "guideline" || kind === "rd") state.pendingProducts = [];
+        if (kind === "guideline" || kind === "rd") {
+          runtime.fileInsights[kind] = { status: "분석중", fileName: file.name, kind: kind === "guideline" ? "가이드라인" : "RD 원본" };
+          void updateFileInsight(kind, file);
+        }
+        clearGeneratedOutput();
+        setFileCard(kind, file);
+        state.uploads.unshift({
+          id: safeId("upl"),
+          kind: kind === "guideline" ? "가이드라인" : "RD 원본",
+          fileName: file.name,
+          at: nowText(),
+          uploader: state.uploaderName || "현재 사용자",
+          status: "저장됨",
+        });
+        saveState();
+        addHistory(`${kind === "guideline" ? "가이드라인" : "RD 원본"} 업로드: ${file.name}`);
+        renderAll();
+      }
+
+      function isSpreadsheetFile(file) {
+        return /\.(xlsx|xls|csv)$/i.test(file?.name || "");
+      }
+
+      async function readWorkbookFromFile(file) {
+        if (!file) throw new Error("파일이 없습니다.");
+        if (!window.XLSX) throw new Error("XLSX 라이브러리를 불러오지 못했습니다.");
+        const name = file.name.toLowerCase();
+        if (name.endsWith(".csv")) {
+          const text = await file.text();
+          return XLSX.read(text, { type: "string" });
+        }
+        const buffer = await file.arrayBuffer();
+        return XLSX.read(buffer, { type: "array" });
+      }
+
+      function buildSheetPreview(rows, limit = 3) {
+        return rows.slice(0, limit).map((row, idx) => `#${idx + 1} ${row.map((cell) => norm(cell) || "-").join(" | ")}`);
+      }
+
+      function buildSpreadsheetInsight(workbook, label) {
+        const sheetNames = workbook.SheetNames || [];
+        const primarySheet = sheetNames.find((name) => /rule master|sheet1|기준|가이드|rd/i.test(name)) || sheetNames[0];
+        const sheet = primarySheet ? workbook.Sheets[primarySheet] : null;
+        const rows = sheet ? XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }) : [];
+        const headerInfo = findHeaderRow(rows, ["상품명", "특약명", "보험코드", "상품코드", "가입한도", "단일건"]);
+        const dataRows = headerInfo ? rows.slice(headerInfo.index + 1).filter((row) => row.some((cell) => norm(cell))) : rows.filter((row) => row.some((cell) => norm(cell)));
+        const preview = headerInfo ? buildSheetPreview(dataRows, 3) : buildSheetPreview(rows, 3);
+        const headers = headerInfo?.headers?.slice(0, 10).filter(Boolean) || [];
+        return {
+          kind: label,
+          sheetCount: sheetNames.length,
+          sheetNames: sheetNames.slice(0, 5),
+          primarySheet: primarySheet || "",
+          rowCount: dataRows.length,
+          headers,
+          preview,
+        };
+      }
+
+      async function updateFileInsight(kind, file) {
+        try {
+          if (!isSpreadsheetFile(file)) {
+            runtime.fileInsights[kind] = {
+              status: "비대상",
+              fileName: file.name,
+              kind: kind === "guideline" ? "가이드라인" : "RD 원본",
+              message: "xlsx/csv만 요약합니다.",
+            };
+            renderAll();
+            return;
+          }
+          const workbook = await readWorkbookFromFile(file);
+          const label = kind === "guideline" ? "가이드라인" : "RD 원본";
+          const insight = buildSpreadsheetInsight(workbook, label);
+          runtime.fileInsights[kind] = {
+            status: "완료",
+            fileName: file.name,
+            ...insight,
+          };
+          renderAll();
+        } catch (error) {
+          runtime.fileInsights[kind] = {
+            status: "오류",
+            fileName: file.name,
+            kind: kind === "guideline" ? "가이드라인" : "RD 원본",
+            message: error.message,
+          };
+          renderAll();
+        }
+      }
+
+      function parseGuidelineProducts(file) {
+        return file.arrayBuffer().then((buffer) => {
+          if (!window.XLSX) throw new Error("XLSX 라이브러리를 불러오지 못했습니다.");
+          const workbook = XLSX.read(buffer, { type: "array" });
+          const rows = parseSheetToAoA(workbook, ["Rule Master"]);
+          const headerInfo = findHeaderRow(rows, ["상품명", "보험명", "특약명", "상품코드", "보험코드"]);
+          if (!headerInfo) return [];
+          const { index: headerIndex, headers } = headerInfo;
+          const iProductName = findCol(headers, ["상품명"]);
+          const iRiderName = findCol(headers, ["특약명", "보험명"]);
+          const iProductCode = findCol(headers, ["상품코드"]);
+          const iInsuranceCode = findCol(headers, ["보험코드"]);
+          const iGeneralAsIs = findAliasCol(headers, ["as-is 일반/건강 단일건", "as-is 일반", "일반/건강 단일건", "일반"]);
+          const iGeneralToBe = findAliasCol(headers, ["to-be 일반/건강 단일건", "to-be 일반", "일반/건강 단일건"]);
+          const iSimpleAsIs = findAliasCol(headers, ["as-is 간편 단일건", "as-is 간편", "간편 단일건", "간편"]);
+          const iSimpleToBe = findAliasCol(headers, ["to-be 간편 단일건", "to-be 간편"]);
+          const iUnit = findAliasCol(headers, ["가입금액단위", "단위"]);
+          const iIndividualSum = findAliasCol(headers, ["인별합산", "인별 합산"]);
+          const iSummaryNote = findAliasCol(headers, ["검토메모", "주석", "주석ID"]);
+          const extracted = [];
+          rows.slice(headerIndex + 1).forEach((row, idx) => {
+            if (!row.some((cell) => norm(cell))) return;
+            const ruleId = norm(row[findCol(headers, ["Rule ID"])]);
+            const productName = norm(row[iProductName]) || "";
+            const riderName = norm(row[iRiderName]) || `특약 ${idx + 1}`;
+            extracted.push({
+              ruleId,
+              productName,
+              riderName,
+              name: riderName || productName || `특약 ${idx + 1}`,
+              productCode: norm(row[iProductCode]) || `AUTO-${String(idx + 1).padStart(3, "0")}`,
+              insuranceCode: norm(row[iInsuranceCode]) || `AUTO-${String(idx + 1).padStart(3, "0")}`,
+              generalAsIs: norm(row[iGeneralAsIs]),
+              generalToBe: norm(row[iGeneralToBe]),
+              simpleAsIs: norm(row[iSimpleAsIs]),
+              simpleToBe: norm(row[iSimpleToBe]),
+              individualSum: norm(row[iIndividualSum]),
+              unit: norm(row[iUnit]),
+              matchedColumns: {
+                generalAsIs: headers[iGeneralAsIs] || "",
+                generalToBe: headers[iGeneralToBe] || "",
+                simpleAsIs: headers[iSimpleAsIs] || "",
+                simpleToBe: headers[iSimpleToBe] || "",
+                individualSum: headers[iIndividualSum] || "",
+                unit: headers[iUnit] || "",
+                note: headers[iSummaryNote] || "",
+              },
+              sourceRow: headerIndex + idx + 2,
+              memo: norm(row[iSummaryNote]),
+            });
+          });
+          if (!extracted.length) {
+              const fallback = rows.slice(headerIndex + 1).filter((row) => row.some((cell) => norm(cell))).slice(0, 2);
+              fallback.forEach((row, idx) => {
+                extracted.push({
+                  ruleId: `R-00${idx + 2}`,
+                  productName: norm(row[iProductName]) || "",
+                  riderName: norm(row[iRiderName]) || `특약 ${idx + 1}`,
+                  name: norm(row[iRiderName]) || norm(row[iProductName]) || `특약 ${idx + 1}`,
+                  productCode: norm(row[iProductCode]) || `AUTO-${String(idx + 1).padStart(3, "0")}`,
+                  insuranceCode: norm(row[iInsuranceCode]) || `AUTO-${String(idx + 1).padStart(3, "0")}`,
+                generalAsIs: norm(row[iGeneralAsIs]),
+                generalToBe: norm(row[iGeneralToBe]),
+                simpleAsIs: norm(row[iSimpleAsIs]),
+                simpleToBe: norm(row[iSimpleToBe]),
+                individualSum: norm(row[iIndividualSum]),
+                unit: norm(row[iUnit]),
+                matchedColumns: {
+                  generalAsIs: headers[iGeneralAsIs] || "",
+                  generalToBe: headers[iGeneralToBe] || "",
+                  simpleAsIs: headers[iSimpleAsIs] || "",
+                  simpleToBe: headers[iSimpleToBe] || "",
+                  individualSum: headers[iIndividualSum] || "",
+                  unit: headers[iUnit] || "",
+                  note: headers[iSummaryNote] || "",
+                },
+                sourceRow: headerIndex + idx + 2,
+                memo: norm(row[iSummaryNote]),
+              });
+            });
+          }
+          return dedupeByKey(extracted, (item) => `${item.productCode}|${item.insuranceCode}`);
+        });
+      }
+
+      function buildFallbackProduct(file) {
+        return [{
+          name: file.name.replace(/\.[^.]+$/, "") || "분석 상품",
+          productName: file.name.replace(/\.[^.]+$/, "") || "분석 상품",
+          productCode: `AUTO-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+          insuranceCode: `AUTO-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+          generalLimit: "",
+          simpleLimit: "",
+          unit: "",
+          sourceRow: 0,
+        }];
+      }
+
+      function createProductModel(extracted, sourceFileName) {
+        const createdAt = nowText();
+        return extracted.map((item) => ({
+          id: safeId("prd"),
+          name: item.name,
+          productName: item.productName,
+          riderName: item.riderName,
+          productCode: item.productCode,
+          insuranceCode: item.insuranceCode,
+          ruleId: item.ruleId,
+          sourceFileName,
+          createdAt,
+          sourceRow: item.sourceRow,
+          limits: {
+            generalAsIs: item.generalAsIs,
+            generalToBe: item.generalToBe,
+            simpleAsIs: item.simpleAsIs,
+            simpleToBe: item.simpleToBe,
+            individualSum: item.individualSum,
+            unit: item.unit,
+          },
+          matchedColumns: item.matchedColumns || {},
+          comparisonSummary: [
+            `${item.productName || item.name || "상품"} / ${item.productCode || "-"} / ${item.insuranceCode || "-"}`,
+            `일반 ${norm(item.generalAsIs) || "-"} -> ${norm(item.generalToBe) || "-"}`,
+            `간편 ${norm(item.simpleAsIs) || "-"} -> ${norm(item.simpleToBe) || "-"}`,
+            `인별합산 ${norm(item.individualSum) || "-"}`,
+          ].join(" | "),
+          memo: item.memo,
+          steps: {
+            rd: { status: "미착수", owner: "미지정", updatedAt: "", comment: "" },
+            calc: { status: "미착수", owner: "미지정", updatedAt: "", comment: "" },
+            exam: { status: "미착수", owner: "미지정", updatedAt: "", comment: "" },
+          },
+          history: [{
+            at: createdAt,
+            message: "변환 성공 후 자동 등록",
+          }],
+        }));
+      }
+
+      function upsertProducts(products) {
+        const existingKeys = new Map(state.products.map((item) => [productGroupKey(item), item]));
+        products.forEach((product) => {
+          const normalized = normalizeSavedProduct(product);
+          const key = productGroupKey(normalized);
+          if (!existingKeys.has(key)) {
+            state.products.push(normalized);
+            existingKeys.set(key, normalized);
+            return;
+          }
+          const current = existingKeys.get(key);
+          current.items = dedupeByKey([...(current.items || []), ...(normalized.items || [normalized])], (item) => `${norm(item.productCode)}|${norm(item.insuranceCode)}`);
+          current.insuranceCodes = Array.from(new Set([...(current.insuranceCodes || []), ...(normalized.insuranceCodes || [normalized.insuranceCode]).filter(Boolean)]));
+          current.insuranceCode = current.insuranceCodes[0] || current.insuranceCode;
+          current.productCode = current.productCode || normalized.productCode;
+          current.name = current.productName || normalized.productName;
+          current.productName = current.productName || normalized.productName;
+          current.sourceFileName = normalized.sourceFileName;
+          current.createdAt = normalized.createdAt;
+          current.limits = normalized.limits;
+          current.history = current.history || [];
+          current.history.unshift({
+            at: nowText(),
+            message: "기존 상품 정보 갱신",
+          });
+        });
+        state.products = normalizeSavedProducts(state.products);
+      }
+
+      function savePendingProducts() {
+        if (!state.pendingProducts.length) {
+          alert("저장할 변환 결과가 없습니다. 먼저 변환을 실행해 주세요.");
+          return;
+        }
+        upsertProducts(state.pendingProducts);
+        state.pendingProducts = [];
+        addHistory("변환 결과 저장: 상품 목록에 누적");
+        saveState();
+        renderAll();
+      }
+
+      async function buildWorkbook({ products }) {
+        const rdBytes = await runtime.rdFile.arrayBuffer();
+        const outWb = XLSX.read(rdBytes, { type: "array", cellStyles: true, cellNF: true, cellText: true });
+        const sheet1 = outWb.Sheets["Sheet1"];
+        if (!sheet1) {
+          throw new Error("기준 RD 원본에서 Sheet1을 찾지 못했습니다.");
+        }
+        const sheet1ChangedRefs = [];
+        products.forEach((product) => {
+          const row = findSheet1RowForProduct(sheet1, product);
+          if (row === null) return;
+          setCellValueIfChanged(sheet1, XLSX.utils.encode_cell({ r: row, c: 1 }), product.productCode || "", sheet1ChangedRefs);
+          setCellValueIfChanged(sheet1, XLSX.utils.encode_cell({ r: row, c: 5 }), product.insuranceCode || "", sheet1ChangedRefs);
+          const limitText = formatLimitPair(product);
+          if (limitText) {
+            setCellValueIfChanged(sheet1, XLSX.utils.encode_cell({ r: row, c: 12 }), limitText, sheet1ChangedRefs);
+          }
+          const unitValue = norm(product.limits?.unit);
+          if (unitValue) {
+            setCellValueIfChanged(sheet1, XLSX.utils.encode_cell({ r: row, c: 13 }), unitValue, sheet1ChangedRefs);
+          }
+        });
+        styleSheet1Highlight(sheet1, sheet1ChangedRefs, "yellow");
+
+        const historyRows = [
+          ["지원Agent 변경히스토리"],
+          ["일시", "상품코드", "보험코드", "특약명", "변경유형", "변경내용", "비고", "", "", "", "메모"],
+        ];
+        const supportRows = [
+          ["지원Agent 수정필요항목"],
+          ["상품코드", "보험코드", "특약명", "변경항목", "가입한도", "변경필요사유", "검토메모", "처리상태"],
+        ];
+        const summaryRows = [["지원Agent 1장 요약"]];
+
+        products.forEach((product) => {
+          const changeText = formatLimitPair(product);
+          if (!changeText) return;
+          const changeInfo = classifyLimitChange(product) || { status: "룰검토필요", reason: "변경 판단 필요" };
+          const status = changeInfo.status;
+          historyRows.push([
+            nowText().slice(0, 10),
+            product?.productCode || "LP0000001",
+            product?.insuranceCode || "LI00111",
+            labelName(product),
+            status,
+            changeText,
+            "",
+            "",
+            "",
+            "",
+            formatReviewNote(product) || "변경 없음",
+          ]);
+          supportRows.push([
+            product?.productCode || "LP0000001",
+            product?.insuranceCode || "LI00111",
+            labelName(product),
+            "가입한도금액RD",
+            changeText,
+            changeInfo.reason,
+            formatReviewNote(product) || "변경 없음",
+            status,
+          ]);
+          summaryRows.push([]);
+          summaryRows.push([`[${status}] ${labelName(product)} (${product?.insuranceCode || "LI00111"})\n상품코드: ${product?.productCode || "LP0000001"}\n변경항목: 가입한도금액RD\n제안: ${changeText}\n메모: ${formatReviewNote(product) || "변경 없음"}`]);
+          summaryRows.push([]);
+        });
+
+        const historySheet = XLSX.utils.aoa_to_sheet(historyRows);
+        const supportSheet = XLSX.utils.aoa_to_sheet(supportRows);
+        const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+
+        styleHistorySheet(historySheet);
+        styleSupportSheet(supportSheet);
+        styleSummarySheet(summarySheet);
+
+        const removeSheet = (name) => {
+          const idx = outWb.SheetNames.indexOf(name);
+          if (idx >= 0) outWb.SheetNames.splice(idx, 1);
+          delete outWb.Sheets[name];
+        };
+        ["변경히스토리", "지원Agent_수정필요항목", "지원Agent_1장요약"].forEach(removeSheet);
+        outWb.SheetNames.push("변경히스토리", "지원Agent_수정필요항목", "지원Agent_1장요약");
+        outWb.Sheets["변경히스토리"] = historySheet;
+        outWb.Sheets["지원Agent_수정필요항목"] = supportSheet;
+        outWb.Sheets["지원Agent_1장요약"] = summarySheet;
+
+        return outWb;
+      }
+
+      function setGeneratedDownload(buffer, fileName) {
+        if (runtime.generatedUrl) URL.revokeObjectURL(runtime.generatedUrl);
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        runtime.generatedUrl = URL.createObjectURL(blob);
+        runtime.generatedName = fileName;
+        runtime.generatedBuffer = buffer;
+        const link = document.getElementById("download-link");
+        link.href = runtime.generatedUrl;
+        link.download = fileName;
+        document.getElementById("download-strip").classList.add("show");
+        document.getElementById("last-convert").textContent = nowText().slice(11, 16);
+      }
+
+      async function saveBufferAsFile(buffer, fileName) {
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const tempUrl = URL.createObjectURL(blob);
+        const tempLink = document.createElement("a");
+        tempLink.href = tempUrl;
+        tempLink.download = fileName;
+        tempLink.style.display = "none";
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        tempLink.remove();
+        setTimeout(() => URL.revokeObjectURL(tempUrl), 2000);
+        return true;
+      }
+
+      async function convertNow() {
+        const guideline = runtime.guidelineFile;
+        const rd = runtime.rdFile;
+        if (!guideline || !rd) {
+          alert("가이드라인 파일과 RD 원본파일을 모두 업로드해 주세요.");
+          return;
+        }
+        const convertBtn = document.getElementById("convert-btn");
+        convertBtn.disabled = true;
+        convertBtn.textContent = "변환 중...";
+        try {
+          let extracted = [];
+          try {
+            extracted = await parseGuidelineProducts(guideline);
+          } catch (error) {
+            console.warn("guideline parse fallback", error);
+            extracted = [];
+          }
+          if (!extracted.length) extracted = buildFallbackProduct(guideline);
+          const products = createProductModel(extracted, guideline.name);
+          state.pendingProducts = products;
+          saveState();
+          state.uploads.unshift({
+            id: safeId("upl"),
+            kind: "변환",
+            fileName: "시스템반영_RD.xlsx",
+            at: nowText(),
+            uploader: state.uploaderName || "현재 사용자",
+            status: "생성됨",
+          });
+          addHistory(`변환 시작: ${guideline.name} + ${rd.name}`, { productName: "전체" });
+          const wb = await buildWorkbook({ products });
+          const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array", cellStyles: true, cellNF: true, cellDates: true });
+          const outName = "시스템반영_RD.xlsx";
+          setGeneratedDownload(buffer, outName);
+          saveState();
+          renderAll();
+          addHistory(`변환 완료: ${outName} 생성`, { productName: "전체" });
+          saveState();
+          renderAll();
+        } catch (error) {
+          console.error(error);
+          alert(`변환 실패: ${error.message}`);
+        } finally {
+          convertBtn.disabled = false;
+          convertBtn.textContent = "변환하기";
+        }
+      }
+
+      function attachDropZone(zoneId, kind) {
+        const zone = document.getElementById(zoneId);
+        const input = document.getElementById(kind === "guideline" ? "guideline-input" : "rd-input");
+        zone.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          zone.classList.add("dragover");
+        });
+        zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+        zone.addEventListener("drop", (event) => {
+          event.preventDefault();
+          zone.classList.remove("dragover");
+          const file = event.dataTransfer.files?.[0];
+          if (!file) return;
+          input.files = event.dataTransfer.files;
+          captureUpload(kind, file);
+        });
+      }
+
+      function updateStep(productId, stepKey, type, value) {
+        const product = state.products.find((item) => item.id === productId);
+        if (!product) return;
+        product.steps[stepKey][type] = value;
+        product.steps[stepKey].updatedAt = nowText();
+        product.history.unshift({
+          at: nowText(),
+          message: `${stepKey === "rd" ? "RD" : stepKey === "calc" ? "기계약합산" : "전산심사"} ${type === "status" ? "상태" : "담당자"} 변경`,
+        });
+        state.history.unshift({
+          id: safeId("hist"),
+          at: nowText(),
+          productName: product.name,
+          step: stepKey,
+          message: `${stepKey === "rd" ? "RD" : stepKey === "calc" ? "기계약합산" : "전산심사"} ${type === "status" ? "상태" : "담당자"} 변경: ${value}`,
+        });
+        state.history = state.history.slice(0, 50);
+        saveState();
+        renderAll();
+      }
+
+      document.getElementById("uploader-name").value = state.uploaderName;
+
+      document.getElementById("uploader-name").addEventListener("input", (event) => {
+        state.uploaderName = event.target.value;
+        saveState();
+      });
+
+      document.querySelectorAll("[data-pick]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const input = document.getElementById(button.getAttribute("data-pick"));
+          if (input) input.click();
+        });
+      });
+
+      document.getElementById("guideline-input").addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (file) captureUpload("guideline", file);
+      });
+      document.getElementById("rd-input").addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (file) captureUpload("rd", file);
+      });
+      document.getElementById("convert-btn").addEventListener("click", convertNow);
+      document.getElementById("save-btn").addEventListener("click", savePendingProducts);
+      document.getElementById("file-reset-btn").addEventListener("click", refreshFileData);
+      document.getElementById("full-reset-btn").addEventListener("click", refreshAllData);
+      document.getElementById("qa-product-select").addEventListener("change", (event) => {
+        runtime.qaSelectedProductId = event.target.value;
+        resetQaAnswer();
+      });
+      document.getElementById("qa-question").addEventListener("input", () => {
+        renderQaPanel();
+      });
+      document.getElementById("qa-ask-btn").addEventListener("click", askOpenAI);
+      document.getElementById("qa-clear-btn").addEventListener("click", () => {
+        const questionInput = document.getElementById("qa-question");
+        if (questionInput) questionInput.value = "";
+        resetQaAnswer();
+      });
+
+      document.getElementById("download-link").addEventListener("click", async (event) => {
+        event.preventDefault();
+        if (!runtime.generatedBuffer || !runtime.generatedName) {
+          alert("먼저 변환을 실행해 주세요.");
+          return;
+        }
+        try {
+          await saveBufferAsFile(runtime.generatedBuffer, runtime.generatedName);
+        } catch (error) {
+          console.error(error);
+          alert(`다운로드 실패: ${error.message}`);
+        }
+      });
+
+      document.addEventListener("change", (event) => {
+        const statusTarget = event.target.closest('[data-action="status"]');
+        if (statusTarget) {
+          updateStep(statusTarget.dataset.productId, statusTarget.dataset.step, "status", statusTarget.value);
+          return;
+        }
+        const ownerTarget = event.target.closest('[data-action="owner"]');
+        if (ownerTarget) {
+          updateStep(ownerTarget.dataset.productId, ownerTarget.dataset.step, "owner", ownerTarget.value);
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+        const deleteBtn = event.target.closest("[data-upload-delete]");
+        if (deleteBtn) {
+          deleteUpload(deleteBtn.getAttribute("data-upload-delete"));
+        }
+      });
+
+      attachDropZone("guideline-drop", "guideline");
+      attachDropZone("rd-drop", "rd");
+
+      window.addEventListener("beforeunload", () => {
+        if (runtime.generatedUrl) URL.revokeObjectURL(runtime.generatedUrl);
+      });
+
+      renderAll();
+    </script>
+  </body>
+</html>

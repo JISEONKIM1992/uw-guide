@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>지원 에이전트 - 신계약 공통</title>
+    <script src="./xlsx.full.min.js"></script>
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
+        --ink: #17202e;
+        --muted: #667085;
+        --line: #dce3ec;
+        --blue: #2456d6;
+        --blue-soft: #e8efff;
+        --green: #087a61;
+        --green-soft: #e6f6f0;
+        --amber: #a15c00;
+        --amber-soft: #fff3dc;
+        --violet: #6941c6;
+        --violet-soft: #f0eaff;
+        --red: #b42318;
+        --red-soft: #ffe9e7;
+        --shadow: 0 18px 45px rgba(16, 24, 40, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      button, input, select, textarea { font: inherit; }
+
+      .page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 4vw, 58px);
+        line-height: 1.05;
+      }
+
+      .top-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .action {
+        min-height: 40px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 9px 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .action:hover { background: var(--surface-2); border-color: #b8c4d4; }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-message { padding: 26px; }
+      .hero-message p {
+        margin: 0;
+        max-width: 820px;
+        color: #344054;
+        font-size: clamp(18px, 2vw, 25px);
+        line-height: 1.55;
+        font-weight: 700;
+      }
+      .hero-message mark {
+        padding: 0 4px;
+        background: var(--blue-soft);
+        color: var(--blue);
+        border-radius: 4px;
+      }
+
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .metric {
+        min-height: 104px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+      }
+      .metric b {
+        display: block;
+        font-size: 28px;
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+      .metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .scope-panel {
+        padding: 22px;
+        display: grid;
+        gap: 14px;
+      }
+      .scope-panel h2, .section h2 {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 31px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        border: 1px solid transparent;
+      }
+      .tag.blue { background: var(--blue-soft); color: var(--blue); border-color: #c7d7ff; }
+      .tag.green { background: var(--green-soft); color: var(--green); border-color: #bce6d8; }
+      .tag.amber { background: var(--amber-soft); color: var(--amber); border-color: #ffd99a; }
+      .tag.red { background: var(--red-soft); color: var(--red); border-color: #ffc5bf; }
+      .tag.violet { background: var(--violet-soft); color: var(--violet); border-color: #dbcfff; }
+
+      .line-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .line-list li {
+        display: grid;
+        grid-template-columns: 7px 1fr;
+        gap: 10px;
+        align-items: start;
+        color: #344054;
+        line-height: 1.45;
+        font-size: 14px;
+      }
+      .line-list li::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        margin-top: 7px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      .section {
+        margin-top: 18px;
+        padding: 24px;
+      }
+      .section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .section-head p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .upload-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .upload-card {
+        flex: 1 1 240px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+      }
+      .upload-card .label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .upload-card .value {
+        font-weight: 800;
+        font-size: 15px;
+        line-height: 1.4;
+      }
+      .upload-card .sub {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .small-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        border: 1px solid #c7d7ff;
+        background: #f4f8ff;
+        color: var(--blue);
+        border-radius: 999px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .small-btn.link {
+        text-decoration: none;
+      }
+      .small-btn.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .small-btn.primary {
+        background: var(--blue);
+        color: #fff;
+        border-color: var(--blue);
+      }
+
+      .hidden-input {
+        display: none;
+      }
+
+      .pipeline {
+        display: grid;
+        gap: 14px;
+      }
+      .pipeline-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .pipeline-card header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .pipeline-card h3 { margin: 0; font-size: 18px; }
+      .pipeline-card .body { padding: 16px; display: grid; gap: 14px; }
+      .helper {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .status-row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .status-row.head {
+        background: var(--surface-2);
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 900;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .status-name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+      }
+      .prod-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: var(--blue);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        border: 1px solid transparent;
+        width: fit-content;
+      }
+      .pill.done { background: var(--green-soft); color: var(--green); border-color: #bce6d8; }
+      .pill.progress { background: var(--blue-soft); color: var(--blue); border-color: #c7d7ff; }
+      .pill.todo { background: #f3f4f6; color: #475467; border-color: #e5e7eb; }
+      .pill.hold { background: var(--amber-soft); color: var(--amber); border-color: #ffd99a; }
+
+      .product-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .product-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .product-card header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+      }
+      .product-card h3 { margin: 0; font-size: 18px; }
+      .product-meta { color: var(--muted); font-size: 13px; font-weight: 700; }
+      .product-body {
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .status-grid {
+        display: grid;
+        gap: 10px;
+      }
+      .owner-grid {
+        display: grid;
+        gap: 10px;
+      }
+      .owner-row {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .owner-row.head {
+        background: var(--surface-2);
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 900;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .select {
+        min-height: 34px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+      }
+      .status-grid .row {
+        display: grid;
+        grid-template-columns: 130px 1fr 120px;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+      .status-grid .name { font-weight: 800; }
+      .file-area {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .file-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid #c7d7ff;
+        background: #f4f8ff;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--blue);
+      }
+      .file-chip.uploading {
+        border-style: dashed;
+        background: #fafcff;
+        color: var(--muted);
+      }
+      .card-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .transform-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .mini-upload {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--muted);
+      }
+      .mini-upload:hover { background: var(--surface-2); }
+      .tiny-btn {
+        min-height: 28px;
+        padding: 0 10px;
+        font-size: 12px;
+        border-radius: 999px;
+      }
+      .download-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid #c7d7ff;
+        background: #f4f8ff;
+        color: var(--blue);
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+      .download-chip.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .summary-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 16px;
+      }
+      .summary-card h3 { margin: 0 0 10px; font-size: 18px; }
+      .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .summary-stats .stat {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+      }
+      .summary-stats b { display: block; font-size: 26px; line-height: 1; margin-bottom: 8px; }
+      .summary-stats span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+      .download-strip {
+        margin-top: 18px;
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .download-strip .title {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .download-strip .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .print-note {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 1100px) {
+        .hero, .two-col { grid-template-columns: 1fr; }
+        .status-row { grid-template-columns: 1fr 1fr; }
+        .status-row.head { display: none; }
+        .summary-stats { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 720px) {
+        .page { padding: 14px; }
+        .topbar { align-items: flex-start; flex-direction: column; }
+        .top-actions { justify-content: flex-start; }
+        .hero-message, .section { padding: 18px; }
+        .hero-metrics { grid-template-columns: 1fr; }
+        .status-grid .row { grid-template-columns: 1fr; }
+        .download-strip { flex-direction: column; align-items: flex-start; }
+      }
+
+      @media print {
+        body { background: #fff; }
+        .page { max-width: none; padding: 0; }
+        .top-actions, .print-note { display: none; }
+        .panel, .pipeline-card, .product-card, .summary-card, .download-strip { box-shadow: none; break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">Standalone Support Agent</p>
+          <h1>지원 에이전트</h1>
+        </div>
+        <div class="top-actions">
+          <button class="action" type="button" data-jump="#upload">가이드라인 업로드</button>
+          <button class="action" type="button" data-jump="#download">RD판 다운로드</button>
+          <button class="action" type="button" data-jump="#work">상품별 처리</button>
+          <button class="action" type="button" data-jump="#summary">전체 현황</button>
+        </div>
+      </div>
+
+      <section class="hero" aria-label="지원 에이전트 개요">
+        <div class="panel hero-message">
+          <p>
+            기획 결과를 받아 <mark>RD 수정 필요항목</mark>과 시스템 반영 정보를 정리하고,
+            상품별 완료 상태와 산출물을 함께 관리합니다.
+          </p>
+          <div class="hero-metrics">
+            <div class="metric">
+              <b>2</b>
+              <span>반영 대상 상품<br />실버보험 · 건강하고 튼튼하게</span>
+            </div>
+            <div class="metric">
+              <b>3</b>
+              <span>완료 항목<br />RD · 기계약합산 · 전산심사</span>
+            </div>
+            <div class="metric">
+              <b>4</b>
+              <span>핵심 흐름<br />업로드 · 작성 · 다운로드 · 재업로드</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel scope-panel">
+          <h2>작업 범위</h2>
+          <div class="tag-list">
+            <span class="tag blue">가이드라인 업로드</span>
+            <span class="tag green">RD 작성</span>
+            <span class="tag amber">상태 관리</span>
+            <span class="tag violet">산출물 업로드</span>
+          </div>
+          <ul class="line-list">
+            <li>상품코드 + 보험코드 기준으로 대상 행을 식별</li>
+            <li>일반/건강과 간편 한도가 같으면 자동반영</li>
+            <li>상이하면 룰검토 필요로 분기</li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="panel section" id="upload" aria-labelledby="upload-title">
+        <div class="section-head">
+          <div>
+            <h2 id="upload-title">1. 가이드라인 업로드 + 상품 담당자 지정</h2>
+            <p>가이드라인 파일을 먼저 올리고 상품별 담당자를 지정한 뒤, 지원 Agent가 RD 수정 필요항목을 도출합니다.</p>
+          </div>
+          <span class="tag blue">Input</span>
+        </div>
+
+        <div class="upload-bar">
+          <div class="upload-card">
+            <div class="label">가이드라인 파일</div>
+            <div class="value" id="guideline-file-name">기획agent_가이드라인v2.xlsx</div>
+            <div class="sub">상품명, 상품코드, Rule Master 기준을 읽습니다.</div>
+          </div>
+          <div class="upload-card">
+            <div class="label">업로드 상태</div>
+            <div class="value" id="guideline-status">업로드 대기</div>
+            <div class="sub">최근 반영 기준일: 2026-04-01</div>
+          </div>
+          <div class="upload-card">
+            <div class="label">작업 버튼</div>
+            <button class="small-btn" type="button" data-pick="guideline-upload">파일 다시 올리기</button>
+            <div class="sub">가이드라인 교체 시 다시 분석합니다.</div>
+          </div>
+        </div>
+
+        <div class="upload-card" style="margin-top: 14px;">
+          <div class="label">상품 담당자 지정</div>
+          <div class="owner-grid">
+            <div class="owner-row head">
+              <div>상품명</div><div>담당자</div><div>상태</div>
+            </div>
+            <div class="owner-row">
+              <div class="status-name"><span class="prod-dot"></span>실버보험</div>
+              <select class="select" aria-label="실버보험 담당자">
+                <option>김지원</option>
+                <option>박현수</option>
+                <option>이민재</option>
+              </select>
+              <span class="pill progress">지정 완료</span>
+            </div>
+            <div class="owner-row">
+              <div class="status-name"><span class="prod-dot"></span>건강하고 튼튼하게</div>
+              <select class="select" aria-label="건강하고 튼튼하게 담당자">
+                <option>김지원</option>
+                <option>박현수</option>
+                <option>이민재</option>
+              </select>
+              <span class="pill progress">지정 완료</span>
+            </div>
+          </div>
+        </div>
+
+        <input class="hidden-input" id="guideline-upload" type="file" accept=".xlsx,.xls,.csv,.tsv" />
+      </section>
+
+      <section class="panel section" id="download" aria-labelledby="download-title">
+        <div class="section-head">
+          <div>
+            <h2 id="download-title">2. 변환한 RD판 다운로드</h2>
+            <p>가이드라인 업로드 후 자동 생성된 RD판을 내려받을 수 있습니다.</p>
+          </div>
+          <span class="tag green">Download</span>
+        </div>
+        <div class="download-strip" style="margin-top: 0;">
+          <div>
+            <div class="title">RD판 생성 결과</div>
+            <p class="helper">업로드 완료 후 다운로드가 활성화됩니다.</p>
+          </div>
+          <div class="actions">
+            <a id="rd-download" class="small-btn link disabled" href="#" download="RD판_지원Agent_자동수정.xlsx">RD판 다운로드</a>
+            <a id="history-download" class="small-btn link disabled" href="#" download="RD판_지원Agent_변경히스토리.xlsx">변경히스토리 보기</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section" id="work" aria-labelledby="work-title">
+        <div class="section-head">
+          <div>
+            <h2 id="work-title">3. 상품별 진행 단계 + 산출물 업로드</h2>
+            <p>상품별로 RD, 기계약합산, 전산심사 진행단계를 확인하고 산출물을 업로드합니다.</p>
+          </div>
+          <span class="tag green">Work Queue</span>
+        </div>
+
+        <div class="pipeline">
+          <div class="pipeline-card">
+            <header>
+              <h3>반영대상 상품</h3>
+              <button class="small-btn" type="button">상품 추가</button>
+            </header>
+            <div class="body">
+              <div class="tag-list">
+                <span class="tag blue">실버보험</span>
+                <span class="tag blue">건강하고 튼튼하게</span>
+                <span class="tag blue">전체 보기</span>
+              </div>
+              <p class="helper">상품이 여러 개인 경우 선택 가능하며, 선택한 상품별로 RD 수정 필요항목이 정리됩니다.</p>
+            </div>
+          </div>
+
+          <div class="product-list">
+            <article class="product-card">
+              <header>
+                <div>
+                  <h3>실버보험</h3>
+                  <div class="product-meta">상품코드 + 보험코드 기준 매칭 완료</div>
+                </div>
+                <button class="mini-upload" type="button" data-pick="product-upload-silver" aria-label="실버보험 업로드">↥</button>
+              </header>
+              <div class="product-body">
+                <div class="status-grid">
+                  <div class="row head">
+                    <div>항목</div><div>상태</div><div>완료여부</div>
+                  </div>
+                  <div class="row">
+                    <div class="name">RD</div>
+                    <div><span class="pill progress">진행중</span></div>
+                    <div><span class="pill progress">담당자 입력</span></div>
+                  </div>
+                  <div class="row">
+                    <div class="name">기계약합산</div>
+                    <div><span class="pill todo">미착수</span></div>
+                    <div><span class="pill todo">미완료</span></div>
+                  </div>
+                  <div class="row">
+                    <div class="name">전산심사</div>
+                    <div><span class="pill hold">보류</span></div>
+                    <div><span class="pill hold">확인 필요</span></div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="mini-label">산출물</p>
+                  <div class="file-area">
+                    <span class="file-chip">📄 RD 수정본</span>
+                    <span class="file-chip">📄 기계약합산 파일</span>
+                    <span class="file-chip">📄 전산심사 자료</span>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="mini-label">업로드 파일</p>
+                  <div class="file-area" id="silver-upload-files">
+                    <span class="file-chip uploading">업로드 대기</span>
+                  </div>
+                </div>
+
+                <div class="transform-row">
+                  <button class="small-btn tiny-btn" type="button" data-transform="silver">시스템반영 파일로 변경</button>
+                  <a id="silver-transform-download" class="download-chip disabled" href="#" download="실버보험_시스템반영.xlsx">변환본 다운로드</a>
+                </div>
+
+                <p class="helper">완료 여부는 담당자가 선택하고, 완료 파일은 상품별로 업로드해 산출물을 관리합니다.</p>
+              </div>
+            </article>
+            <input class="hidden-input" id="product-upload-silver" type="file" accept=".xlsx,.xls,.csv,.tsv,.pdf,.docx,.png,.jpg,.jpeg" multiple />
+
+            <article class="product-card">
+              <header>
+                <div>
+                  <h3>건강하고 튼튼하게</h3>
+                  <div class="product-meta">상품코드 + 보험코드 기준 매칭 완료</div>
+                </div>
+                <button class="mini-upload" type="button" data-pick="product-upload-health" aria-label="건강하고 튼튼하게 업로드">↥</button>
+              </header>
+              <div class="product-body">
+                <div class="status-grid">
+                  <div class="row head">
+                    <div>항목</div><div>상태</div><div>완료여부</div>
+                  </div>
+                  <div class="row">
+                    <div class="name">RD</div>
+                    <div><span class="pill done">완료</span></div>
+                    <div><span class="pill done">확정</span></div>
+                  </div>
+                  <div class="row">
+                    <div class="name">기계약합산</div>
+                    <div><span class="pill progress">진행중</span></div>
+                    <div><span class="pill progress">담당자 입력</span></div>
+                  </div>
+                  <div class="row">
+                    <div class="name">전산심사</div>
+                    <div><span class="pill todo">미착수</span></div>
+                    <div><span class="pill todo">미완료</span></div>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="mini-label">산출물</p>
+                  <div class="file-area">
+                    <span class="file-chip">📄 RD 수정본</span>
+                    <span class="file-chip">📄 기계약합산 파일</span>
+                    <span class="file-chip">📄 전산심사 자료</span>
+                    <span class="file-chip">📄 변경히스토리</span>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="mini-label">업로드 파일</p>
+                  <div class="file-area" id="health-upload-files">
+                    <span class="file-chip uploading">업로드 대기</span>
+                  </div>
+                </div>
+
+                <div class="transform-row">
+                  <button class="small-btn tiny-btn" type="button" data-transform="health">시스템반영 파일로 변경</button>
+                  <a id="health-transform-download" class="download-chip disabled" href="#" download="건강하고 튼튼하게_시스템반영.xlsx">변환본 다운로드</a>
+                </div>
+
+                <p class="helper">자동반영 여부와 룰검토 필요는 원본 파일에서 확인합니다.</p>
+              </div>
+            </article>
+            <input class="hidden-input" id="product-upload-health" type="file" accept=".xlsx,.xls,.csv,.tsv,.pdf,.docx,.png,.jpg,.jpeg" multiple />
+          </div>
+
+          <div class="download-strip" id="outputs">
+            <div>
+              <div class="title">산출물 업로드</div>
+              <p class="helper">완료 파일은 상품별 업로드로 관리합니다.</p>
+            </div>
+            <div class="actions">
+              <button class="small-btn" type="button" data-pick="result-upload">결과물 업로드</button>
+            </div>
+          </div>
+          <input class="hidden-input" id="result-upload" type="file" accept=".xlsx,.xls,.csv,.tsv" multiple />
+        </div>
+      </section>
+
+      <section class="panel section" id="summary" aria-labelledby="summary-title">
+        <div class="section-head">
+          <div>
+            <h2 id="summary-title">4. 전체 진행현황</h2>
+            <p>상품별 진행 상황과 담당자별 현황을 한 번에 확인합니다.</p>
+          </div>
+          <span class="tag violet">Status</span>
+        </div>
+
+        <div class="two-col">
+          <div class="summary-card">
+            <h3>전체 진행 요약</h3>
+            <div class="summary-stats">
+              <div class="stat">
+                <b id="done-count">1</b>
+                <span>완료</span>
+              </div>
+              <div class="stat">
+                <b id="progress-count">2</b>
+                <span>진행중</span>
+              </div>
+              <div class="stat">
+                <b id="hold-count">1</b>
+                <span>보류</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <h3>담당자별 현황</h3>
+            <ul class="line-list">
+              <li>김지원 - 실버보험: RD 진행중 / 기계약합산 미착수 / 전산심사 보류</li>
+              <li>박현수 - 건강하고 튼튼하게: RD 완료 / 기계약합산 진행중 / 전산심사 미착수</li>
+              <li>상품별 상태는 담당자 선택 후 업데이트합니다.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-top:14px;">
+          <div class="summary-card">
+            <h3>검토 메모</h3>
+            <ul class="line-list">
+              <li>일반/간편 한도 차등 시 룰검토 필요</li>
+              <li>전산심사 반영 후 완료 파일 업로드</li>
+              <li>기계약합산은 담당자 확인 후 완료 처리</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <p class="print-note">발표 시 브라우저 확대율 90~100%를 권장합니다. 인쇄 또는 PDF 저장은 우측 상단의 "발표자료 저장" 버튼을 사용하세요.</p>
+    </main>
+
+    <script>
+      const RD_TEMPLATE = [
+        ["속성", "아래 노란색 항목에 원하신 상품정보를 입력하세요! (예시참조)", null, null, null, null, "푸른색 부분은 RPA 입력예정", null, null, "상보", "상보", "상보", "상보", "상보", "상보"],
+        ["항목명", null, null, null, null, null, null, null, null, "특약관계전산심사코드RD", "심사배수적용방법코드RD", "단일건심사한도배수RD", "가입한도금액RD", "가입금액단위RD", "계약금액확인내용RD"],
+        ["영어", null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+        ["속성", "상품", "구분", "보험명", "상품코드", "보험코드", "TEMPLATE_ID_P", "TEMPLATE_ID_EP", "신규코드", "ZZTRTY_RLTN_C_ID", "ZZJDG_MUL_A_M_ID", "ZZSNG_C_J_L_M_ID", "ZZENT_LMT_AMT_ID", "ZZISAM_UNIT_D_ID", "ZZCONT_AM_C_C_ID"],
+        [null, "LP0000001", "주", "주보험", null, "LI00111", null, null, null, "00", "00", "0", "1000~1000", "1000", "0"],
+        [null, "LP0000001", "특", "암진단", null, "LI00112", null, null, null, "00", "00", "0", "1000~2000", "1000", "#SPEEE1111"],
+        [null, "LP0000001", "특", "소액암진단", null, "LI00113", null, null, null, "00", "00", "0", "1000~1000", "1000", "0"],
+        [null, "LP0000001", "특", "파워수술", null, "LI00115", null, null, null, "00", "00", "0", "100~100", "100", "0"],
+        [null, "LP0000001", "특", "파워수술", null, "LI00116", null, null, null, "00", "00", "0", "200~200", "100", "0"],
+        [null, "LP0000001", "특", "파워수술", null, "LI00117", null, null, null, "00", "00", "0", "300~300", "100", "0"],
+        [null, "LP0000001", "특", "파워수술", null, "LI00118", null, null, null, "00", "00", "0", "500~500", "100", "0"],
+        [null, "LP0000001", "특", "파워수술", null, "LI00119", null, null, null, "00", "00", "0", "1000~1000", "1000", "0"],
+        [null, "LP0000001", "특", "신입원특약", null, "LI00120", null, null, null, "00", "00", "0", "3000~3000", "1000", "0"],
+        [null, "LP0000001", "특", "입원간병인", null, "LI00121", null, null, null, "00", "00", "0", "#SPE7Q3211", "1000", "0"],
+      ];
+
+      const RD_COL = { product: 1, code: 5, limit: 12, unit: 13 };
+      const guidelineUpload = document.getElementById("guideline-upload");
+      const guidelineStatus = document.getElementById("guideline-status");
+      const guidelineFileName = document.getElementById("guideline-file-name");
+      const rdDownload = document.getElementById("rd-download");
+      const historyDownload = document.getElementById("history-download");
+      const resultUpload = document.getElementById("result-upload");
+      let currentObjectUrl = "";
+      const productState = {
+        silver: {
+          label: "실버보험",
+          downloadId: "silver-transform-download",
+          fileTargetId: "silver-upload-files",
+          statuses: {
+            RD: "진행중",
+            기계약합산: "미착수",
+            전산심사: "보류",
+          },
+          owner: "김지원",
+        },
+        health: {
+          label: "건강하고 튼튼하게",
+          downloadId: "health-transform-download",
+          fileTargetId: "health-upload-files",
+          statuses: {
+            RD: "완료",
+            기계약합산: "진행중",
+            전산심사: "미착수",
+          },
+          owner: "박현수",
+        },
+      };
+      const uploadedFilesByProduct = {
+        silver: [],
+        health: [],
+      };
+      const productDownloadUrls = {
+        silver: "",
+        health: "",
+      };
+
+      const norm = (value) => (value === null || value === undefined ? "" : String(value).trim());
+      const cloneAoA = (aoa) => aoa.map((row) => row.slice());
+      const setFiles = (targetId, files) => {
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        target.innerHTML = "";
+        if (!files || !files.length) {
+          target.innerHTML = '<span class="file-chip uploading">업로드 대기</span>';
+          return;
+        }
+        Array.from(files).forEach((file) => {
+          const chip = document.createElement("span");
+          chip.className = "file-chip";
+          chip.textContent = `📄 ${file.name}`;
+          target.appendChild(chip);
+        });
+      };
+
+      const setProductFiles = (productKey, files) => {
+        uploadedFilesByProduct[productKey] = Array.from(files || []);
+        setFiles(productState[productKey].fileTargetId, uploadedFilesByProduct[productKey]);
+      };
+
+      const clearProductDownload = (productKey) => {
+        if (productDownloadUrls[productKey]) {
+          URL.revokeObjectURL(productDownloadUrls[productKey]);
+          productDownloadUrls[productKey] = "";
+        }
+        const link = document.getElementById(productState[productKey].downloadId);
+        if (link) {
+          link.href = "#";
+          link.classList.add("disabled");
+        }
+      };
+
+      const setProductDownload = (productKey, arrayBuffer, fileName) => {
+        clearProductDownload(productKey);
+        const blob = new Blob([arrayBuffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        productDownloadUrls[productKey] = URL.createObjectURL(blob);
+        const link = document.getElementById(productState[productKey].downloadId);
+        if (link) {
+          link.href = productDownloadUrls[productKey];
+          link.download = fileName;
+          link.classList.remove("disabled");
+        }
+      };
+
+      const buildSystemReflectionWorkbook = async (productKey) => {
+        const files = uploadedFilesByProduct[productKey];
+        if (!files?.length) {
+          throw new Error("먼저 업로드한 파일이 필요합니다.");
+        }
+        const sourceFile = files[0];
+        const sourceExt = (sourceFile.name.split(".").pop() || "").toLowerCase();
+        const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
+        const summaryRows = [
+          ["시스템반영 파일", null, null, null],
+          ["상품명", productState[productKey].label, null, null],
+          ["담당자", productState[productKey].owner, null, null],
+          ["생성시각", timestamp, null, null],
+          ["원본 파일", sourceFile.name, null, null],
+          ["업로드된 파일 수", String(files.length), null, null],
+          [null, null, null, null],
+          ["진행단계", "상태", "완료여부", "비고"],
+          ["RD", productState[productKey].statuses.RD, "담당자 입력", "원본 파일 기준 자동/수동 반영 확인"],
+          ["기계약합산", productState[productKey].statuses.기계약합산, "담당자 입력", "산출물 업로드 후 확인"],
+          ["전산심사", productState[productKey].statuses.전산심사, "담당자 입력", "심사결과 반영 필요"],
+        ];
+
+        const outWb = XLSX.utils.book_new();
+        if (["xlsx", "xls", "csv", "tsv"].includes(sourceExt)) {
+          const sourceBuffer = await sourceFile.arrayBuffer();
+          const sourceWb = XLSX.read(sourceBuffer, { type: "array" });
+          sourceWb.SheetNames.forEach((sheetName) => {
+            const sourceSheet = sourceWb.Sheets[sheetName];
+            if (!sourceSheet) return;
+            const cloned = typeof structuredClone === "function"
+              ? structuredClone(sourceSheet)
+              : JSON.parse(JSON.stringify(sourceSheet));
+            let safeName = sheetName.slice(0, 31) || "Sheet";
+            let suffix = 1;
+            while (outWb.SheetNames.includes(safeName)) {
+              const base = sheetName.slice(0, Math.max(1, 28 - String(suffix).length)) || "Sheet";
+              safeName = `${base}_${suffix}`;
+              suffix += 1;
+            }
+            XLSX.utils.book_append_sheet(outWb, cloned, safeName);
+          });
+        }
+        const systemSheet = XLSX.utils.aoa_to_sheet(summaryRows);
+        systemSheet["!cols"] = [{ wch: 18 }, { wch: 40 }, { wch: 14 }, { wch: 28 }];
+        XLSX.utils.book_append_sheet(outWb, systemSheet, "시스템반영");
+        return outWb;
+      };
+
+      const triggerDownload = (href, fileName) => {
+        const a = document.createElement("a");
+        a.href = href;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+
+      window.addEventListener("beforeunload", () => {
+        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+        Object.values(productDownloadUrls).forEach((url) => url && URL.revokeObjectURL(url));
+      });
+
+      const setDownloadLinks = (arrayBuffer, fileName) => {
+        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+        const blob = new Blob([arrayBuffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        currentObjectUrl = URL.createObjectURL(blob);
+        rdDownload.href = currentObjectUrl;
+        rdDownload.download = fileName;
+        rdDownload.classList.remove("disabled");
+        historyDownload.href = currentObjectUrl;
+        historyDownload.download = fileName;
+        historyDownload.classList.remove("disabled");
+      };
+
+      const parseGuidelineWorkbook = (arrayBuffer) => {
+        if (!window.XLSX) {
+          throw new Error("XLSX 라이브러리를 불러오지 못했습니다.");
+        }
+        const wb = XLSX.read(arrayBuffer, { type: "array" });
+        const ws = wb.Sheets["Rule Master"];
+        if (!ws) {
+          throw new Error("Rule Master 시트를 찾지 못했습니다.");
+        }
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+        const headerRowIndex = rows.findIndex((row) => row.some((cell) => norm(cell) === "Rule ID"));
+        if (headerRowIndex < 0) {
+          throw new Error("Rule Master 헤더를 찾지 못했습니다.");
+        }
+        const headers = rows[headerRowIndex].map((cell) => norm(cell));
+        const dataRows = rows.slice(headerRowIndex + 1).filter((row) => row.some((cell) => norm(cell) !== ""));
+        return { headers, dataRows };
+      };
+
+      const buildRdWorkbook = ({ headers, dataRows }) => {
+        const idx = (name) => headers.indexOf(name);
+        const iProduct = idx("상품코드");
+        const iRuleId = idx("Rule ID");
+        const iStatus = idx("상태");
+        const iRider = idx("특약명");
+        const iCode = idx("보험코드");
+        const iAsIsGeneral = idx("as-is 일반/건강 단일건");
+        const iToBeGeneral = idx("to-be 일반/건강 단일건");
+        const iAsIsSimple = idx("as-is 간편 단일건");
+        const iToBeSimple = idx("to-be 간편 단일건");
+        const iMemo = idx("검토메모");
+
+        const rdRows = cloneAoA(RD_TEMPLATE);
+        const history = [
+          ["RD판 변경 히스토리", null, null, null, null, null, null, null, null, null, null],
+          ["변경일", "상품코드", "Rule ID", "상태", "보험코드", "보험명", "변경항목", "변경 전", "변경 후/가이드", "처리결과", "사유/메모"],
+        ];
+        let modifiedCount = 0;
+
+        dataRows.forEach((row) => {
+          const productCode = norm(row[iProduct]) || "LP0000001";
+          const ruleId = norm(row[iRuleId]);
+          const status = norm(row[iStatus]);
+          const riderName = norm(row[iRider]);
+          const code = norm(row[iCode]);
+          const asIsGeneral = norm(row[iAsIsGeneral]);
+          const toBeGeneral = norm(row[iToBeGeneral] || row[iAsIsGeneral]);
+          const asIsSimple = norm(row[iAsIsSimple]);
+          const toBeSimple = norm(row[iToBeSimple] || row[iToBeGeneral] || row[iAsIsSimple]);
+          const memo = norm(row[iMemo]);
+
+          const rdRow = rdRows.find((candidate, index) => index >= 4 && norm(candidate[RD_COL.product]) === productCode && norm(candidate[RD_COL.code]) === code);
+          if (!rdRow) {
+            history.push([
+              "2026-06-16",
+              productCode,
+              ruleId,
+              status,
+              code,
+              riderName,
+              "가입한도금액RD",
+              "",
+              "상품코드+보험코드 기준 RD 행을 찾지 못함",
+              "미반영",
+              memo,
+            ]);
+            return;
+          }
+
+          const currentLimit = norm(rdRow[RD_COL.limit]);
+          const currentUnit = rdRow[RD_COL.unit];
+          const differentByType = toBeGeneral !== toBeSimple;
+          if (differentByType || currentLimit.startsWith("#")) {
+            rdRow[RD_COL.limit] = `${currentLimit} > 룰검토필요(일반/건강=${toBeGeneral}, 간편=${toBeSimple})`;
+            history.push([
+              "2026-06-16",
+              productCode,
+              ruleId,
+              status,
+              code,
+              riderName,
+              "가입한도금액RD",
+              currentLimit,
+              `룰검토필요(일반/건강=${toBeGeneral}, 간편=${toBeSimple})`,
+              "룰검토필요",
+              `${memo} / 일반 as-is=${asIsGeneral}, to-be=${toBeGeneral}; 간편 as-is=${asIsSimple}, to-be=${toBeSimple}`.trim(),
+            ]);
+          } else {
+            const newLimit = `${toBeGeneral}~${toBeGeneral}`;
+            rdRow[RD_COL.limit] = `${currentLimit} > ${newLimit}`;
+            history.push([
+              "2026-06-16",
+              productCode,
+              ruleId,
+              status,
+              code,
+              riderName,
+              "가입한도금액RD",
+              currentLimit,
+              newLimit,
+              "자동반영",
+              memo || `일반/건강과 간편 한도 동일(${toBeGeneral})`,
+            ]);
+          }
+          rdRow[RD_COL.unit] = currentUnit;
+          history.push([
+            "2026-06-16",
+            productCode,
+            ruleId,
+            status,
+            code,
+            riderName,
+            "가입금액단위RD",
+            currentUnit,
+            currentUnit,
+            "유지",
+            "기획 Agent 결과에 가입금액단위 변경 정보 없음",
+          ]);
+          modifiedCount += 1;
+        });
+
+        const wb = XLSX.utils.book_new();
+        const rdSheet = XLSX.utils.aoa_to_sheet(rdRows);
+        const historySheet = XLSX.utils.aoa_to_sheet(history);
+        rdSheet["!cols"] = [{ wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 12 }, { wch: 14 }];
+        historySheet["!cols"] = [{ wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 18 }, { wch: 30 }, { wch: 12 }, { wch: 40 }];
+        XLSX.utils.book_append_sheet(wb, rdSheet, "Sheet1");
+        XLSX.utils.book_append_sheet(wb, historySheet, "변경히스토리");
+        return { wb, modifiedCount };
+      };
+
+      document.querySelectorAll("[data-jump]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = document.querySelector(button.getAttribute("data-jump"));
+          if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+
+      document.querySelectorAll("[data-pick]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const input = document.getElementById(button.getAttribute("data-pick"));
+          if (input) input.click();
+        });
+      });
+
+      guidelineUpload?.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        guidelineFileName.textContent = file.name;
+        guidelineStatus.textContent = "분석 중";
+        try {
+          const buffer = await file.arrayBuffer();
+          const parsed = parseGuidelineWorkbook(buffer);
+          const built = buildRdWorkbook(parsed);
+          const outputBuffer = XLSX.write(built.wb, { bookType: "xlsx", type: "array" });
+          const outName = `${file.name.replace(/\.(xlsx|xls|csv|tsv)$/i, "")}_지원Agent자동수정.xlsx`;
+          setDownloadLinks(outputBuffer, outName);
+          guidelineStatus.textContent = `완료 (${built.modifiedCount}건)`;
+        } catch (error) {
+          console.error(error);
+          guidelineStatus.textContent = "실패";
+          alert(`가이드라인 처리 실패: ${error.message}`);
+        }
+      });
+
+      document.getElementById("product-upload-silver")?.addEventListener("change", (event) => {
+        setProductFiles("silver", event.target.files);
+        clearProductDownload("silver");
+      });
+
+      document.getElementById("product-upload-health")?.addEventListener("change", (event) => {
+        setProductFiles("health", event.target.files);
+        clearProductDownload("health");
+      });
+
+      document.querySelectorAll("[data-transform]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const productKey = button.getAttribute("data-transform");
+          if (!productState[productKey]) return;
+          try {
+            button.disabled = true;
+            button.textContent = "변환 중...";
+            const outputWb = await buildSystemReflectionWorkbook(productKey);
+            const outputBuffer = XLSX.write(outputWb, { bookType: "xlsx", type: "array" });
+            const fileName = `${productState[productKey].label}_시스템반영_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            setProductDownload(productKey, outputBuffer, fileName);
+            triggerDownload(productDownloadUrls[productKey], fileName);
+          } catch (error) {
+            console.error(error);
+            alert(`시스템반영 파일 생성 실패: ${error.message}`);
+          } finally {
+            button.disabled = false;
+            button.textContent = "시스템반영 파일로 변경";
+          }
+        });
+      });
+
+      resultUpload?.addEventListener("change", (event) => {
+        const files = event.target.files;
+        if (!files?.length) return;
+        alert(`${files.length}개 파일이 선택되었습니다. 완료 산출물 업로드로 연결하면 됩니다.`);
+      });
+    </script>
+  </body>
+</html>
