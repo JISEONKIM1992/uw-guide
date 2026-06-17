@@ -1313,6 +1313,7 @@
         const rdInsight = runtime.fileInsights.rd;
         return [
           `상품명: ${productDisplayName(product)}`,
+          `특약: ${productRiderLabel(product)}`,
           `상품코드: ${norm(product.productCode) || "-"}`,
           `보험코드: ${(product.insuranceCodes || [product.insuranceCode]).filter(Boolean).join(" / ") || "-"}`,
           `최근 파일: ${norm(product.sourceFileName) || "-"}`,
@@ -1426,6 +1427,7 @@
         const unit = norm(activeItem?.limits?.unit);
         const comparisonSummary = [
           `상품명: ${productDisplayName(activeItem)}`,
+          `특약: ${productRiderLabel(activeItem)}`,
           `상품코드: ${norm(activeItem?.productCode) || "-"}`,
           `보험코드: ${(activeItem?.insuranceCodes || [activeItem?.insuranceCode]).filter(Boolean).join(" / ") || "-"}`,
           `일반/건강 단일건: ${generalAsIs || "-"} -> ${generalToBe || "-"}`,
@@ -1440,6 +1442,8 @@
           product: {
             id: activeItem?.id || product.id,
             productName: productDisplayName(activeItem),
+            riderLabel: productRiderLabel(activeItem),
+            riderName: labelName(activeItem),
             productCode: activeItem?.productCode || "",
             insuranceCodes: (activeItem?.insuranceCodes || [activeItem?.insuranceCode]).filter(Boolean),
             sourceFileName: activeItem?.sourceFileName || "",
@@ -1466,6 +1470,8 @@
           },
           products: state.products.slice(0, 20).map((item) => ({
             productName: productDisplayName(item),
+            riderLabel: productRiderLabel(item),
+            riderName: labelName(item),
             productCode: item.productCode || "",
             insuranceCodes: (item.insuranceCodes || [item.insuranceCode]).filter(Boolean),
             sourceFileName: item.sourceFileName || "",
@@ -1474,6 +1480,8 @@
           })),
           pendingProducts: state.pendingProducts.slice(0, 20).map((item) => ({
             productName: productDisplayName(item),
+            riderLabel: productRiderLabel(item),
+            riderName: labelName(item),
             productCode: item.productCode || "",
             insuranceCodes: (item.insuranceCodes || [item.insuranceCode]).filter(Boolean),
             sourceFileName: item.sourceFileName || "",
@@ -1669,6 +1677,11 @@
 
       function labelName(product) {
         return norm(product?.riderName) || norm(product?.name) || "특약";
+      }
+
+      function productRiderLabel(product) {
+        const code = norm(product?.insuranceCode) || norm(product?.insuranceCodes?.[0]) || "-";
+        return `${code} ${labelName(product)}`.trim();
       }
 
       function productDisplayName(product) {
