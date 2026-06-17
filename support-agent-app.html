@@ -711,7 +711,12 @@
       const STATUS_OPTIONS = ["미착수", "진행중", "보류", "완료"];
       const ASSIGNEES = ["미지정", "김지원", "박현수", "홍길동", "김영희", "이서연", "최현수"];
       const FILE_ACCEPT = ".xlsx,.xls,.csv,.docx,.pdf";
-      const OPENAI_PROXY_URL = "http://127.0.0.1:8787/api/openai-answer";
+      const OPENAI_PROXY_URL = (() => {
+        const isLocalFile = window.location.protocol === "file:";
+        return isLocalFile
+          ? "http://127.0.0.1:8787/api/openai-answer"
+          : `${window.location.origin}/api/openai-answer`;
+      })();
 
       const runtime = {
         guidelineFile: null,

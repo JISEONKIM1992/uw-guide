@@ -1,4 +1,24 @@
+import fs from "node:fs";
+import path from "node:path";
 import http from "node:http";
+
+function loadLocalEnvFile() {
+  const envPath = path.join(process.cwd(), ".env.support-agent.local");
+  if (!fs.existsSync(envPath)) return;
+  const text = fs.readFileSync(envPath, "utf8");
+  text.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const eqIndex = trimmed.indexOf("=");
+    if (eqIndex <= 0) return;
+    const key = trimmed.slice(0, eqIndex).trim();
+    const rawValue = trimmed.slice(eqIndex + 1).trim();
+    if (!key || process.env[key]) return;
+    process.env[key] = rawValue.replace(/^['"]|['"]$/g, "");
+  });
+}
+
+loadLocalEnvFile();
 
 const PORT = Number(process.env.PORT || 8787);
 const API_KEY = String(process.env.BIZROUTER_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");

@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "proxy": "node support-agent-openai-proxy.mjs"
+  },
   "dependencies": {
     "xlsx-js-style": "^1.2.0"
   }
